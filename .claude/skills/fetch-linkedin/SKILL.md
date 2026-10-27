@@ -46,8 +46,8 @@ replaces the old instruction to `fetch()` each LinkedIn page URL directly.
    add it to this table in the same edit that adds the connection.
 
 3. **Read each cache log.**
-   For every slug, look for `COULD/<SLUG>-<quarter>.log`
-   (e.g. `COULD/NZSA-2026Q3.log`). Each file is an append log — newest
+   For every slug, look for `MAY/<SLUG>-<quarter>.log`
+   (e.g. `MAY/NZSA-2026Q3.log`). Each file is an append log — newest
    entry first, just below the anchor marker. Each entry is two lines:
 
    ```

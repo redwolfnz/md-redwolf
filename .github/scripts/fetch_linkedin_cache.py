@@ -140,7 +140,7 @@ def main() -> int:
                 print(f"slug={slug}: non-JSON response — skipping", file=sys.stderr)
                 skipped += 1
                 continue
-            log_path = REPO_ROOT / "COULD" / f"{slug}-{QUARTER}.log"
+            log_path = REPO_ROOT / "MAY" / f"{slug}-{QUARTER}.log"
             prepend_entry(log_path, slug, parsed)
             fetched += 1
             print(f"slug={slug}: prepended entry to {log_path.relative_to(REPO_ROOT)}")

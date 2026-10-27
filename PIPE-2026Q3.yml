@@ -12,8 +12,8 @@ meta:
 # ── REPO STRUCTURE ──────────────────────────────────────────────────────────
 folders:
   CAN:   strategy and rules        # what the content must follow
-  COULD: posts and media           # what the content should contain
-  MAY:   assets and values         # what the content could reference
+  MAY:   posts and media           # what the content should contain
+  COULD: assets and values         # what the content could reference
   MIGHT: activity log              # what has happened
 
 # ── CONTENT STRUCTURE ───────────────────────────────────────────────────────
@@ -71,13 +71,13 @@ steps:
 
   - id: step-2
     name: Generate
-    # Open MAY/TABLE-2026Q3.csv and add 6 new rows — one per pillar.
+    # Open COULD/TABLE-2026Q3.csv and add 6 new rows — one per pillar.
     # topic / type / subtopic / score / media-type already decided from Step 1.
     # Write title, description, tags, hashtags.
     # tags: @Red Wolf always; partners only if directly relevant.
     # Set all new posts to BLOCKED.
     writes:
-      - MAY/TABLE-2026Q3.csv
+      - COULD/TABLE-2026Q3.csv
     substeps:
 
       - id: 2a
@@ -86,7 +86,7 @@ steps:
         files:
           - path: CAN/TREE-2026Q3.json
             action: add any new subtypes selected this batch
-          - path: MAY/TABLE-2026Q3.csv
+          - path: COULD/TABLE-2026Q3.csv
             action: verify all 6 rows are complete and correct
           - path: MIGHT/ASSET-2026Q3.md
             action: append entries for new media assets or decisions
@@ -98,7 +98,7 @@ steps:
         commit: "content(w<NN>): generate week <NN> batch — post-0XX to post-0XX"
         git_add:
           - CAN/TREE-2026Q3.json
-          - MAY/TABLE-2026Q3.csv
+          - COULD/TABLE-2026Q3.csv
           - MIGHT/ASSET-2026Q3.md
         pr_body_script: .github/scripts/gen_pr_body.py
         # Usage:
@@ -110,7 +110,7 @@ steps:
         # Generate or source media. Save to COULD/media/<quarter>/.
         # Log each asset in MIGHT/ASSET-2026Q3.md.
         writes:
-          - COULD/media/2026Q3/
+          - MAY/media/2026Q3/
           - MIGHT/ASSET-2026Q3.md
 
 # ── RULES ───────────────────────────────────────────────────────────────────
@@ -121,7 +121,7 @@ rules:
   - Step 1 must be completed before Step 2 — subtype selection in 1b must be informed by 1a findings
   - Only tag partners when the post is directly relevant to their product or domain
   - Set media-type to the expected output file format (see Step 1c media_types)
-  - All new posts go into MAY/TABLE-2026Q3.csv with status BLOCKED until media and approvals are in place
+  - All new posts go into COULD/TABLE-2026Q3.csv with status BLOCKED until media and approvals are in place
   - Each batch must use at least 3 distinct media types
 
 # ── SCORING ─────────────────────────────────────────────────────────────────
@@ -161,9 +161,9 @@ scoring:
 # ── KEY FILES ───────────────────────────────────────────────────────────────
 key_files:
   CAN/TREE-2026Q3.json:                content strategy skeleton
-  COULD/<SLUG>-2026Q3.log:             per-connection LinkedIn fetch history — newest entry first (written by fetch-linkedin.yml)
-  MAY/TABLE-2026Q3.csv:                all posts, all weeks
-  COULD/media/2026Q3/:                 post media files
+  MAY/<SLUG>-2026Q3.log:             per-connection LinkedIn fetch history — newest entry first (written by fetch-linkedin.yml)
+  COULD/TABLE-2026Q3.csv:                all posts, all weeks
+  MAY/media/2026Q3/:                 post media files
   MIGHT/ASSET-2026Q3.md:               asset log (status, verify notes)
   .claude/skills/fetch-linkedin/:      Step 1a skill
   .github/scripts/gen_pr_body.py:      generates PR body from live data files (Step 2b)

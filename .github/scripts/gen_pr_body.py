@@ -21,7 +21,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 QUARTER = "2026Q3"
-TABLE   = f"MAY/TABLE-{QUARTER}.csv"
+TABLE   = f"COULD/TABLE-{QUARTER}.csv"
 ASSET   = f"MIGHT/ASSET-{QUARTER}.md"
 
 FETCH_ANCHOR = "####### <!-- ANCHOR MARKER - ADD ALL NEW ENTRIES DIRECTLY BELOW THIS LINE -->"
@@ -61,7 +61,7 @@ def connection_activity(week: int) -> str:
 
     blocks = []
     for slug in SLUG_ORDER:
-        log_path = Path(f"COULD/{slug}-{QUARTER}.log")
+        log_path = Path(f"MAY/{slug}-{QUARTER}.log")
         if not log_path.exists():
             continue
         data = _parse_latest_entry(log_path)
@@ -125,11 +125,11 @@ def gen_pr_body(week: int) -> str:
 {mermaid_block()}
 <!-- TREE-END -->
 
-## Connection activity (`COULD/`)
+## Connection activity (`MAY/`)
 
 {connection_activity(week)}
 
-## Posts (`MAY/TABLE-{QUARTER}.csv`)
+## Posts (`COULD/TABLE-{QUARTER}.csv`)
 
 {posts_table(week)}
 
