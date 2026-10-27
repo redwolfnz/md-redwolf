@@ -213,54 +213,62 @@ function mediaLink(row) {
   return `<div class="post-media"><a href="${url}" target="_blank">${label}</a></div>`;
 }
 
-let csvSha     = null;
-let csvRows    = [];
-let csvHeaders = [];
-
-function serializeCSV(rows, headers) {
-  const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
-  return [headers.map(q).join(","), ...rows.map(r => headers.map(h => q(r[h] ?? "")).join(","))].join("\n") + "\n";
-}
-
-function toBase64(str) {
-  const bytes = new TextEncoder().encode(str);
-  let bin = "";
-  bytes.forEach(b => { bin += String.fromCharCode(b); });
-  return btoa(bin);
+async function pollWorkflow(startedAt, statusEl, label) {
+  for (let i = 0; i < 24; i++) {
+    await new Promise(r => setTimeout(r, 3000));
+    try {
+      const res = await fetch(
+        `https://api.github.com/repos/${OWNER}/${REPO}/actions/runs?event=repository_dispatch&per_page=5`,
+        { headers: { "Authorization": `Bearer ${TOKEN}`, "Accept": "application/vnd.github+json" } }
+      );
+      const json = await res.json();
+      const run = (json.workflow_runs || []).find(r => new Date(r.created_at) >= startedAt);
+      if (!run) continue;
+      if (run.status === "completed") {
+        if (run.conclusion === "success") {
+          statusEl.textContent = label;
+          statusEl.className = "status ok";
+        } else {
+          statusEl.textContent = `Workflow ${run.conclusion}`;
+          statusEl.className = "status err";
+        }
+        return;
+      }
+    } catch { /* keep polling */ }
+  }
+  statusEl.textContent = "Timed out — check manually";
+  statusEl.className = "status err";
 }
 
 async function submitFeedback(postId, result, comment, btn, statusEl, allBtns, commentOnly = false) {
-  if (!TOKEN || !csvSha) { statusEl.textContent = "Error: not ready"; statusEl.className = "status err"; return false; }
   allBtns.forEach(b => b.disabled = true);
-  statusEl.textContent = "Saving…";
+  statusEl.textContent = "Submitting…";
   statusEl.className = "status";
   try {
-    const row = csvRows.find(r => r.item === postId);
-    if (row) { row.feedback = result; row["feedback-comment"] = comment; }
-    const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${CSV_PATH}`, {
-      method: "PUT",
+    const startedAt = new Date();
+    const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/dispatches`, {
+      method: "POST",
       headers: { "Authorization": `Bearer ${TOKEN}`, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
-      body: JSON.stringify({ message: `feedback: ${postId} -> ${result || "cleared"}`, content: toBase64(serializeCSV(csvRows, csvHeaders)), sha: csvSha })
+      body: JSON.stringify({ event_type: "client-feedback", client_payload: { post_id: postId, result, comment } })
     });
-    if (res.status === 200 || res.status === 201) {
-      const json = await res.json();
-      csvSha = json.content.sha;
+    if (res.status === 204) {
+      let label;
       if (commentOnly) {
         const activeResult = allBtns.find(b => b.classList.contains("active"))?.dataset.result;
         allBtns.forEach(b => { b.style.opacity = activeResult && b.dataset.result !== activeResult ? "0.35" : ""; });
-        statusEl.textContent = comment ? "Comment saved" : "Comment cleared";
-        statusEl.className = "status ok";
+        label = comment ? "Comment saved" : "Comment cleared";
       } else if (result === "") {
         allBtns.forEach(b => { b.classList.remove("active"); b.style.opacity = ""; });
-        statusEl.textContent = "Cleared";
-        statusEl.className = "status";
+        label = "Cleared";
       } else {
         allBtns.forEach(b => { b.classList.remove("active"); b.style.opacity = b.dataset.result !== result ? "0.35" : ""; });
         btn.classList.add("active");
-        statusEl.textContent = `Saved: ${result}`;
-        statusEl.className = "status ok";
+        label = `Saved: ${result}`;
       }
       allBtns.forEach(b => b.disabled = false);
+      statusEl.textContent = "Waiting…";
+      statusEl.className = "status";
+      pollWorkflow(startedAt, statusEl, label);
       return true;
     } else {
       throw new Error(`HTTP ${res.status}`);
