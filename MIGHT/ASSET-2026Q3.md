@@ -2,6 +2,14 @@ ASSET LOG
 
 ####### <!-- ANCHOR MARKER - ADD ALL NEW ASSET ENTRIES DIRECTLY BELOW THIS LINE -->
 
+## ASSET:redwolf 2026-10-27 -> UI/data fixes: PDF preview, CSV freshness, feedback persistence
+
+**PDF preview:** Replaced Google Docs Viewer iframe (triggered "viewer" save-as) with `<embed type="application/pdf">` loaded via blob URL. Raw.githubusercontent.com serves files as `application/octet-stream` — switched all media URLs to `https://redwolfnz.github.io/md-redwolf/` (GitHub Pages serves correct MIME types).
+
+**CSV freshness:** Switched CSV fetch from `raw.githubusercontent.com` (5-min CDN cache) to GitHub Contents API (authenticated — no CDN cache). `CSV_PATH` constant added; raw URL kept as unauthenticated fallback.
+
+**Feedback persistence:** Win/Tie/Lost saves via `repository_dispatch` → `update-feedback.yml`. localStorage overlay added then removed once root cause (CDN cache) was fixed. Current state: no localStorage, API fetch always fresh.
+
 ## ASSET:redwolf 2026-10-27 -> UI comment feature unparked; save-file symptom under monitoring
 
 **Comment feature:** `.feedback-comment-row` and `.saved-comment` were parked (`display:none !important`). Unparked — now live. Saves to `feedback-comment` column in `COULD/TABLE-2026Q3.csv` via `update-feedback.yml` dispatch.
