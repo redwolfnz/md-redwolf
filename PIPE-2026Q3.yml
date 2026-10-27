@@ -76,6 +76,8 @@ steps:
     # Write title, description, tags, hashtags.
     # tags: @Red Wolf always; partners only if directly relevant.
     # Set all new posts to BLOCKED.
+    rules:
+      - Do not use double hyphens (--) anywhere in generated text — use an em dash (—) or reword instead
     writes:
       - COULD/TABLE-2026Q3.csv
     substeps:
