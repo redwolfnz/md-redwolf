@@ -6,7 +6,7 @@ description: Use during STEP 1a (RESEARCH / fetch()) of a Red Wolf content batch
 # fetch-linkedin
 
 Implements STEP 1a from the root `README.TXT` using the cached-snapshot design
-recorded in `MAY/ASSET-<quarter>.md` ("Claude skill plan: LinkedIn fetch via
+recorded in `MIGHT/ASSET-<quarter>.md` ("Claude skill plan: LinkedIn fetch via
 macnimi server + GitHub Action", Option B). A separate GitHub Action
 (`.github/workflows/fetch-linkedin.yml`, not yet built) calls an authenticated
 macnimi/Puppeteer server on a weekly cron and commits one JSON snapshot per

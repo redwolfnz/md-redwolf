@@ -62,7 +62,7 @@ STEP 1 — RESEARCH
         do not tag a connection whose recentPosts[] is empty or stale
 
       Fallback (a connection's cache file is missing or stale — the
-      pipeline is live as of 2026-10-22, see MAY/ASSET-2026Q3.md, but
+      pipeline is live as of 2026-10-22, see MIGHT/ASSET-2026Q3.md, but
       an individual fetch can still fail, e.g. the LinkedIn session
       expiring):
         run a web search for that connection's slug instead.
@@ -83,7 +83,7 @@ STEP 1 — RESEARCH
         mp4  — video
 
 STEP 2 — GENERATE
-  Open COULD/TABLE-2026Q3.csv and add 6 new rows for the next
+  Open MAY/TABLE-2026Q3.csv and add 6 new rows for the next
   week number — one per pillar — using the selections from STEP 1:
     topic, type, subtopic, score, media-type already decided
     write title, description, tags, hashtags
@@ -95,7 +95,7 @@ STEP B — OPEN WEEKLY PR
   client can review posts and suggest changes through STEPS 3–5.
 
   1. Stage and commit the generated files:
-       git add COULD/TABLE-2026Q3.csv MIGHT/LOG-2026Q3.log
+       git add MAY/TABLE-2026Q3.csv COULD/LOG-2026Q3.log
        git commit -m "content(w<NN>): generate week <NN> batch — post-0XX to post-0XX"
        git push
 
@@ -139,7 +139,7 @@ STEP B — OPEN WEEKLY PR
 
 STEP 3 — MEDIA
   Generate or source media, save to COULD/media/<quarter>/,
-  log each asset in MAY/ASSET-2026Q3.md.
+  log each asset in MIGHT/ASSET-2026Q3.md.
 
 STEP 4 — REVIEW
   Client reviews posts via the index site (GitHub Pages).
@@ -148,7 +148,7 @@ STEP 4 — REVIEW
 STEP 5 — PUBLISH
   Download media locally (LinkedIn does not accept URLs).
   Copy title, description, tags, and hashtags from the CSV.
-  Upload to LinkedIn and log outcome in MIGHT/LOG-2026Q3.log.
+  Upload to LinkedIn and log outcome in COULD/LOG-2026Q3.log.
 
 ============================================================
 CONTENT GENERATION RULES
@@ -218,10 +218,10 @@ KEY FILES
   CAN/TREE-<SLUG>-2026Q3.json       per-connection LinkedIn cache
                                       (written by fetch-linkedin.yml;
                                       none exist yet — see ASSET log)
-  COULD/TABLE-2026Q3.csv            all posts, all weeks
+  MAY/TABLE-2026Q3.csv              all posts, all weeks
   COULD/media/2026Q3/               post media files
-  MAY/ASSET-2026Q3.md              asset log (status, verify notes)
-  MIGHT/LOG-2026Q3.log               activity log
+  MIGHT/ASSET-2026Q3.md             asset log (status, verify notes)
+  COULD/LOG-2026Q3.log              activity log
   .claude/skills/fetch-linkedin/     STEP 1a skill (reads the cache above)
   .github/workflows/fetch-linkedin.yml   weekly cache-refresh Action
 
@@ -230,8 +230,8 @@ QUARTER ROLLOVER
 ============================================================
   At the start of a new quarter:
   - Create CAN/TREE-<year><Q>.json   (copy + update meta)
-  - Create COULD/TABLE-<year><Q>.csv (new header, empty rows)
-  - Create MAY/ASSET-<year><Q>.md   (fresh log)
-  - Create MIGHT/LOG-<year><Q>.log    (fresh log)
+  - Create MAY/TABLE-<year><Q>.csv   (new header, empty rows)
+  - Create MIGHT/ASSET-<year><Q>.md  (fresh log)
+  - Create COULD/LOG-<year><Q>.log   (fresh log)
   - Update this file: client, quarter, key files section
 ============================================================
