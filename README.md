@@ -145,17 +145,6 @@ git push
 ## Assets (`MIGHT/ASSET-2026Q3.md`)
 
 <paste any new asset entries, or "no new assets this week">
-
-## Research signals (Step 1a)
-
-- **<CONNECTION>** (<date>) — <finding> → post-0XX
-- **BOSCH** — page inactive (Keenfinity Group since Jul 2026); not tagged
-- **JACQUES** — last post <date>; not tagged
-
-## Next steps
-
-- [ ] Generate media for post-0XX to post-0XX (Step 2c)
-- [ ] Update status from BLOCKED → READY when media is ready
 ```
 
 </details>
