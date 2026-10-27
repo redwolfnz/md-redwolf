@@ -5,17 +5,16 @@ Called by .github/workflows/fetch-linkedin.yml (weekly cron).
 Reads CAN/TREE-2026Q3.json's connections{}, maps each to its fixed slug
 (same table as .claude/skills/fetch-linkedin/SKILL.md — keep both in
 sync if connections{} ever changes), and calls py-redwolf's listener
-once per connection, sequentially with a pause between calls, writing
-each successful response to CAN/TREE-<SLUG>-2026Q3.json.
+once per connection, sequentially with a pause between calls, prepending
+each successful response as a new dated entry in COULD/<SLUG>-2026Q3.log.
 
 A failed/unreachable call for one connection is logged and skipped —
-it never fails the whole job, and never overwrites that connection's
-existing cache file with bad data. A missing cache file is exactly
-what the fetch-linkedin skill (STEP 1a) already treats as MISSING.
+it never fails the whole job, and never touches that connection's
+existing log. A missing log file is exactly what the fetch-linkedin
+skill (STEP 1a) already treats as MISSING.
 
-Quarter is hardcoded as 2026Q3, matching every other file in this
-repo this quarter — update it at quarter rollover alongside the rest
-of README.md's QUARTER ROLLOVER section.
+Quarter is hardcoded as 2026Q3 — update it at quarter rollover alongside
+the rest of PIPE-2026Q3.yml's QUARTER ROLLOVER section.
 """
 
 import json
@@ -32,6 +31,7 @@ QUARTER = "2026Q3"
 TREE_FILE = REPO_ROOT / "CAN" / f"TREE-{QUARTER}.json"
 SECONDS_BETWEEN_CALLS = 30
 REQUEST_TIMEOUT = 90
+ANCHOR = "####### <!-- ANCHOR MARKER - ADD ALL NEW ENTRIES DIRECTLY BELOW THIS LINE -->"
 
 # Must match .claude/skills/fetch-linkedin/SKILL.md's mapping table.
 SLUG_MAP = {
@@ -69,12 +69,6 @@ def fetch_one(base_url: str, slug: str, company_name: str, url: str,
               cf_client_id: str, cf_client_secret: str, shared_secret: str) -> bytes | None:
     qs = urllib.parse.urlencode({"slug": slug, "companyName": company_name, "url": url})
     full_url = f"{base_url}?{qs}"
-    # urllib's default User-Agent ("Python-urllib/x.y") gets blocked
-    # outright before reaching the tunnel at all — confirmed live: every
-    # connection came back HTTP 403 on the first real run, and curl with
-    # that same UA spoofed got blocked identically, while a normal UA
-    # (or this custom one) passes. Most likely Cloudflare's Bot Fight
-    # Mode or a similar default WAF rule blocking known bot/script UAs.
     headers = {
         "User-Agent": "redwolf-linkedin-fetch/1.0 (+https://github.com/redwolfnz/md-redwolf)",
     }
@@ -99,6 +93,27 @@ def fetch_one(base_url: str, slug: str, company_name: str, url: str,
         return None
 
 
+def prepend_entry(log_path: Path, slug: str, data: dict) -> None:
+    """Prepend a new ## <fetchedAt> / <compact JSON> entry to the log."""
+    fetched_at = data.get("fetchedAt", "unknown")
+    compact = json.dumps(data, separators=(",", ":"))
+    new_entry = f"## {fetched_at}\n{compact}\n"
+
+    if log_path.exists():
+        text = log_path.read_text(encoding="utf-8")
+        marker_pos = text.find(ANCHOR)
+        if marker_pos == -1:
+            # Malformed log — append at end as fallback
+            log_path.write_text(text.rstrip() + f"\n\n{new_entry}", encoding="utf-8")
+            return
+        insert_at = marker_pos + len(ANCHOR)
+        text = text[:insert_at] + f"\n\n{new_entry}" + text[insert_at:].lstrip("\n")
+    else:
+        text = f"FETCH LOG — {slug} — {QUARTER}\n\n{ANCHOR}\n\n{new_entry}"
+
+    log_path.write_text(text, encoding="utf-8")
+
+
 def main() -> int:
     base_url = os.environ.get("LINKEDIN_FETCH_URL", "")
     if not base_url:
@@ -110,54 +125,31 @@ def main() -> int:
     shared_secret = os.environ.get("LISTENER_SHARED_SECRET", "")
 
     connections = load_connections()
-    print(f"Fetching {len(connections)} connections, "
-          f"{SECONDS_BETWEEN_CALLS}s apart...")
+    print(f"Fetching {len(connections)} connections, {SECONDS_BETWEEN_CALLS}s apart...")
 
     fetched, skipped = 0, 0
     for i, (slug, company_name, url) in enumerate(connections):
         body = fetch_one(base_url, slug, company_name, url,
-                          cf_client_id, cf_client_secret, shared_secret)
+                         cf_client_id, cf_client_secret, shared_secret)
         if body is None:
             skipped += 1
         else:
-            out_path = REPO_ROOT / "CAN" / f"TREE-{slug}-{QUARTER}.json"
             try:
                 parsed = json.loads(body)
             except json.JSONDecodeError:
                 print(f"slug={slug}: non-JSON response — skipping", file=sys.stderr)
                 skipped += 1
                 continue
-            out_path.write_text(json.dumps(parsed, indent=2) + "\n")
+            log_path = REPO_ROOT / "COULD" / f"{slug}-{QUARTER}.log"
+            prepend_entry(log_path, slug, parsed)
             fetched += 1
-            print(f"slug={slug}: wrote {out_path.relative_to(REPO_ROOT)}")
+            print(f"slug={slug}: prepended entry to {log_path.relative_to(REPO_ROOT)}")
 
         if i < len(connections) - 1:
             time.sleep(SECONDS_BETWEEN_CALLS)
 
-    removed = _remove_orphaned_cache_files(connections)
-
-    print(f"Done: {fetched} written, {skipped} skipped, {removed} orphaned removed.")
-    return 0  # never fail the job over individual connection failures
-
-
-def _remove_orphaned_cache_files(connections: list) -> int:
-    """connections{} in CAN/TREE-2026Q3.json can change at any time —
-    a connection being removed/renamed shouldn't leave its old cache
-    file sitting in CAN/ forever, where it'd never be read (the skill
-    only looks up slugs it finds in the CURRENT connections{}) but
-    would clutter the repo indefinitely. Removes any
-    CAN/TREE-<SLUG>-2026Q3.json whose slug isn't in this run's
-    connections list."""
-    current_slugs = {slug for slug, _, _ in connections}
-    removed = 0
-    for path in (REPO_ROOT / "CAN").glob(f"TREE-*-{QUARTER}.json"):
-        slug = path.stem[len("TREE-"):-len(f"-{QUARTER}")]
-        if slug not in current_slugs:
-            print(f"slug={slug}: connection no longer in connections{{}} — "
-                  f"removing orphaned {path.relative_to(REPO_ROOT)}")
-            path.unlink()
-            removed += 1
-    return removed
+    print(f"Done: {fetched} written, {skipped} skipped.")
+    return 0
 
 
 if __name__ == "__main__":

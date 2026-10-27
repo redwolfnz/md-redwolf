@@ -42,7 +42,7 @@ steps:
         skill: .claude/skills/fetch-linkedin/
         reads:
           - CAN/TREE-2026Q3.json
-          - CAN/TREE-*-2026Q3.json
+          - COULD/*-2026Q3.log
         # Reads connections{} from TREE JSON then each TREE-<SLUG> cache file.
         # Cache built by: GitHub Action → Cloudflare Tunnel
         #   → py-redwolf/listener.py on mac mini
@@ -164,7 +164,7 @@ scoring:
 # ── KEY FILES ───────────────────────────────────────────────────────────────
 key_files:
   CAN/TREE-2026Q3.json:                content strategy skeleton
-  CAN/TREE-<SLUG>-2026Q3.json:         per-connection LinkedIn cache (written by fetch-linkedin.yml)
+  COULD/<SLUG>-2026Q3.log:             per-connection LinkedIn fetch history — newest entry first (written by fetch-linkedin.yml)
   MAY/TABLE-2026Q3.csv:                all posts, all weeks
   COULD/media/2026Q3/:                 post media files
   MIGHT/ASSET-2026Q3.md:               asset log (status, verify notes)

@@ -45,10 +45,25 @@ replaces the old instruction to `fetch()` each LinkedIn page URL directly.
    uppercase slug the same way (first/most distinctive word, no spaces) and
    add it to this table in the same edit that adds the connection.
 
-3. **Read each cache file.**
-   For every slug, look for `CAN/TREE-<SLUG>-<quarter>.json`
-   (e.g. `CAN/TREE-NZSA-2026Q3.json`). Expected shape:
+3. **Read each cache log.**
+   For every slug, look for `COULD/<SLUG>-<quarter>.log`
+   (e.g. `COULD/NZSA-2026Q3.log`). Each file is an append log — newest
+   entry first, just below the anchor marker. Each entry is two lines:
 
+   ```
+   ## <fetchedAt ISO timestamp>
+   {"slug":"NZSA","companyName":"...","url":"...","fetchedAt":"...","followerCount":0,"bio":"...","recentPosts":[...]}
+   ```
+
+   To read the **most recent** entry (default): take the first `## ` block
+   after the anchor marker and parse the JSON line that follows it.
+
+   To read the entry **closest to a specific date** (e.g. when auditing
+   why a past batch made a particular selection): scan all `## <timestamp>`
+   headers and pick the entry whose `fetchedAt` is ≤ the target date and
+   closest to it.
+
+   The JSON shape within each entry:
    ```json
    {
      "slug": "NZSA",
@@ -64,26 +79,21 @@ replaces the old instruction to `fetch()` each LinkedIn page URL directly.
    }
    ```
    `repostOf` is present only when the connection reposted someone
-   else's content rather than posting their own — the text is still
-   worth reading for relevance, but it's that other company's words,
-   not the connection's own.
+   else's content — the text is still worth reading for relevance, but
+   it's that other company's words, not the connection's own.
 
 4. **Check freshness before trusting the data.**
    - **Missing file** — the Action hasn't run for this slug yet, or the
      connection is new. Treat as 1a's "inactive page" case: do not tag this
      connection in STEP 2, and note it as MISSING in the 1a findings.
-   - **URL mismatch** — compare the cache file's own `url` field against
-     that slug's URL in `CAN/TREE-2026Q3.json`'s `connections{}` *right
-     now*. If they differ, treat as STALE regardless of `fetchedAt`'s
-     age — `connections{}` can be edited at any time (a partner's page
-     migrating, a corrected slug), and a day-old snapshot of the WRONG
-     page is worse than a week-old snapshot of the right one. This is
-     the only way to catch that case; `fetchedAt` alone can't.
+   - **URL mismatch** — compare the entry's `url` field against that slug's
+     URL in `CAN/TREE-2026Q3.json`'s `connections{}` *right now*. If they
+     differ, treat as STALE regardless of `fetchedAt`'s age.
    - **Stale (`fetchedAt` more than 7 days old)** — flag as STALE in the 1a
      findings but still use the data; a week-old snapshot is still more
      current than guessing.
-   - **Malformed JSON** — flag as MISSING and skip; don't block the batch on
-     one bad file.
+   - **Malformed entry** — flag as MISSING and skip; don't block the batch
+     on one bad entry.
 
 5. **Summarize per connection.**
    For each connection with usable data, write 1–2 sentences on anything from
