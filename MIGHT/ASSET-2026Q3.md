@@ -2,6 +2,47 @@ ASSET LOG
 
 ####### <!-- ANCHOR MARKER - ADD ALL NEW ASSET ENTRIES DIRECTLY BELOW THIS LINE -->
 
+## ASSET:redwolf 2026-10-27 -> PR body: Connection activity section; LOG-2026Q3.log retired from pipeline
+
+**Connection activity section added to gen_pr_body.py:**
+New section between CAN tree and MAY posts (CAN → COULD → MAY → MIGHT order). Reads each `COULD/<SLUG>-2026Q3.log`, parses the most recent fetch entry, filters `recentPosts[]` to the last 7 days (rolling window anchored to today), and shows only connections that had posts in that window. Empty connections omitted. Fallback: `_No connection posts in the last 7 days (<start> – <end>)._`
+
+**Window: last 7 days (not ISO week-1):**
+Initially implemented as the previous ISO week (w-1 Mon–Sun). Revised to a rolling 7-day window anchored to today — simpler, no ISO boundary arithmetic, and fairly labelled as this week's signals regardless of batch day. Same window applied to `SKILL.md` step 5 so research and PR are in sync.
+
+**SKILL.md step 5 updated:**
+Now filters `recentPosts` to posts within the last 7 days before summarising, matching the PR section. Connections with no posts in window: "no activity (last 7 days)."
+
+**COULD/LOG-2026Q3.log retired from active pipeline:**
+Removed from `gen_pr_body.py` (LOG const, `log_entry()` function, "Activity log" PR section), `PIPE-2026Q3.yml` (step 2a files, step 2b git_add, key_files, quarter_rollover). File left in repo with v1/v2/v3 history intact — not deleted.
+
+## ASSET:redwolf 2026-10-27 -> README.md → PIPE-2026Q3.yml; LOG restructured; JSON caches → append-only logs
+
+**README.md → PIPE-2026Q3.yml + gen_pr_body.py:**
+README.md deleted. Replaced by two files:
+- `PIPE-2026Q3.yml` — full pipeline definition as YAML; all prose kept as `#` comments; PR template section replaced by reference to the script below.
+- `.github/scripts/gen_pr_body.py` — generates PR body dynamically from live data files for Step 2b. Reads `MAY/TABLE-2026Q3.csv` (posts table), `COULD/LOG-2026Q3.log` (feedback block), `MIGHT/ASSET-2026Q3.md` (assets entry), calls `gen_tree_mermaid.py` subprocess for the Mermaid block. Usage: `python3 gen_pr_body.py <NN> > /tmp/pr_body.md`. Sections order: CAN tree → COULD log → MAY posts → MIGHT assets.
+
+**COULD/LOG-2026Q3.log restructured as versioned feedback log:**
+Repurposed from generic activity log to one versioned entry per client-visible batch, newest first, anchor marker. Each entry: `## v<N> — w<NN> — <date>` header + posts table with Feedback column. Backfilled: v1 (w42), v2 (w43), v3 (w44 — Feedback column set to `—` pending results).
+
+**CAN/TREE-<SLUG>-2026Q3.json → COULD/<SLUG>-2026Q3.log (10 files, commit 9b0ad81):**
+All 10 per-connection JSON snapshots deleted from `CAN/`. Replaced by append-only logs in `COULD/` — newest entry first, anchor marker, each entry = `## <fetchedAt ISO>` + compact JSON line. Existing 2026-10-25 snapshot migrated as the first entry in each log.
+
+Files deleted from CAN/: `TREE-{REDWOLF,NZSA,ASIS,NZPOLICE,JOHNSON,GALLAGHER,INNERRANGE,BOSCH,ICT,JACQUES}-2026Q3.json`
+Files created in COULD/: `{REDWOLF,NZSA,ASIS,NZPOLICE,JOHNSON,GALLAGHER,INNERRANGE,BOSCH,ICT,JACQUES}-2026Q3.log`
+
+**fetch_linkedin_cache.py updated:**
+Overwrite-JSON replaced by `prepend_entry()` — prepends a new `## <fetchedAt> / <compact JSON>` block after the anchor. Output path changed from `CAN/TREE-<SLUG>-2026Q3.json` to `COULD/<SLUG>-2026Q3.log`. `_remove_orphaned_cache_files()` removed (history is the point). Malformed-log fallback: appends at end if anchor is missing.
+
+**References updated:**
+- `fetch-linkedin.yml`: `git add -- 'COULD/*-2026Q3.log'` (was `CAN/TREE-*-2026Q3.json`)
+- `SKILL.md`: new file path + most-recent vs by-date lookup instructions
+- `PIPE-2026Q3.yml`: key_files section
+
+**content/w44-batch merged to main; branch deleted:**
+User preference: main only. Branch fast-forwarded. One CSV conflict during merge resolved: kept all 18 rows from HEAD (w44 data), applied post-008 feedback-comment clear from origin/main. Branch deleted local and remote.
+
 ## ASSET:redwolf 2026-10-27 16:20 -> Week 44 media generated (post-013, 014, 015, 017, 018)
 
 **Media (COULD/media/2026Q3/, 1080x1350; media URLs updated in MAY/TABLE-2026Q3.csv):**

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate a PR body for the weekly content batch.
 
-Reads the four key files and assembles the PR description in
+Reads the key files and assembles the PR description in
 CAN → COULD → MAY → MIGHT section order.
 
 Usage:
@@ -13,20 +13,78 @@ Example:
 """
 
 import csv
+import json
 import re
 import subprocess
 import sys
+from datetime import date, timedelta
+from pathlib import Path
 
 QUARTER = "2026Q3"
 TABLE   = f"MAY/TABLE-{QUARTER}.csv"
-LOG     = f"COULD/LOG-{QUARTER}.log"
 ASSET   = f"MIGHT/ASSET-{QUARTER}.md"
+
+FETCH_ANCHOR = "####### <!-- ANCHOR MARKER - ADD ALL NEW ENTRIES DIRECTLY BELOW THIS LINE -->"
+
+SLUG_ORDER = [
+    "REDWOLF", "NZSA", "ASIS", "NZPOLICE",
+    "JOHNSON", "GALLAGHER", "INNERRANGE", "BOSCH", "ICT", "JACQUES",
+]
 
 
 def mermaid_block() -> str:
     return subprocess.check_output(
         ["python3", ".github/scripts/gen_tree_mermaid.py"], text=True
     ).strip()
+
+
+def _parse_latest_entry(log_path: Path) -> dict | None:
+    text = log_path.read_text(encoding="utf-8")
+    after = text[text.find(FETCH_ANCHOR) + len(FETCH_ANCHOR):]
+    m = re.search(r"## \S+\n(\{[^\n]+\})", after)
+    if not m:
+        return None
+    try:
+        return json.loads(m.group(1))
+    except json.JSONDecodeError:
+        return None
+
+
+def connection_activity(week: int) -> str:
+    """Return posts from COULD/<SLUG>-*.log within the last 7 days (rolling window).
+
+    Anchored to today so the section is fairly labelled as this week's signals
+    regardless of where the ISO week boundary falls.
+    """
+    end   = date.today()
+    start = end - timedelta(days=7)
+
+    blocks = []
+    for slug in SLUG_ORDER:
+        log_path = Path(f"COULD/{slug}-{QUARTER}.log")
+        if not log_path.exists():
+            continue
+        data = _parse_latest_entry(log_path)
+        if not data:
+            continue
+        week_posts = [
+            p for p in data.get("recentPosts", [])
+            if start <= date.fromisoformat(p["date"]) <= end
+        ]
+        if not week_posts:
+            continue
+        company = data.get("companyName", slug)
+        lines = [f"**{company}**"]
+        for p in week_posts:
+            snippet = p["text"][:120].replace("\n", " ")
+            if len(p["text"]) > 120:
+                snippet += "…"
+            lines.append(f"- {p['date']}: {snippet}")
+        blocks.append("\n".join(lines))
+
+    if not blocks:
+        return f"_No connection posts in the last 7 days ({start} – {end})._"
+    return "\n\n".join(blocks)
 
 
 def posts_table(week: int) -> str:
@@ -46,15 +104,6 @@ def posts_table(week: int) -> str:
     return "\n".join(lines)
 
 
-def log_entry(week: int) -> str:
-    """Return the log block for the given week's version entry."""
-    text = open(LOG, encoding="utf-8").read()
-    # Match  ## v<N> — w<NN> — <date>  up to the next ## or end of file
-    pattern = rf"(## v\d+ — w{week:02d}.*?)(?=\n## |\Z)"
-    m = re.search(pattern, text, re.DOTALL)
-    return m.group(1).strip() if m else f"_No log entry found for week {week}._"
-
-
 def asset_entry() -> str:
     """Return the most recent ASSET entry (between anchor and next ##)."""
     text = open(ASSET, encoding="utf-8").read()
@@ -65,10 +114,6 @@ def asset_entry() -> str:
 
 
 def gen_pr_body(week: int) -> str:
-    posts = posts_table(week)
-    first_post = f"post-{(week - 1) * 6 + 1:03d}"
-    last_post  = f"post-{week * 6:03d}"
-
     return f"""\
 ## Week {week:02d} — 6 posts, all BLOCKED pending media
 
@@ -80,13 +125,13 @@ def gen_pr_body(week: int) -> str:
 {mermaid_block()}
 <!-- TREE-END -->
 
-## Activity log (`COULD/LOG-{QUARTER}.log`)
+## Connection activity (`COULD/`)
 
-{log_entry(week)}
+{connection_activity(week)}
 
 ## Posts (`MAY/TABLE-{QUARTER}.csv`)
 
-{posts}
+{posts_table(week)}
 
 ## Assets (`MIGHT/ASSET-{QUARTER}.md`)
 

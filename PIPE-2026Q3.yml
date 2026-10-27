@@ -86,8 +86,6 @@ steps:
         files:
           - path: CAN/TREE-2026Q3.json
             action: add any new subtypes selected this batch
-          - path: COULD/LOG-2026Q3.log
-            action: append new version entry (v<N>) — posts table, feedback column set to —
           - path: MAY/TABLE-2026Q3.csv
             action: verify all 6 rows are complete and correct
           - path: MIGHT/ASSET-2026Q3.md
@@ -100,7 +98,6 @@ steps:
         commit: "content(w<NN>): generate week <NN> batch — post-0XX to post-0XX"
         git_add:
           - CAN/TREE-2026Q3.json
-          - COULD/LOG-2026Q3.log
           - MAY/TABLE-2026Q3.csv
           - MIGHT/ASSET-2026Q3.md
         pr_body_script: .github/scripts/gen_pr_body.py
@@ -168,7 +165,6 @@ key_files:
   MAY/TABLE-2026Q3.csv:                all posts, all weeks
   COULD/media/2026Q3/:                 post media files
   MIGHT/ASSET-2026Q3.md:               asset log (status, verify notes)
-  COULD/LOG-2026Q3.log:                versioned feedback log — one entry per weekly batch
   .claude/skills/fetch-linkedin/:      Step 1a skill
   .github/scripts/gen_pr_body.py:      generates PR body from live data files (Step 2b)
   .github/scripts/gen_tree_mermaid.py: generates Mermaid diagram from TREE JSON
@@ -180,5 +176,4 @@ quarter_rollover:
   - create CAN/TREE-<year><Q>.json          # copy + update meta
   - create MAY/TABLE-<year><Q>.csv          # new header, empty rows
   - create MIGHT/ASSET-<year><Q>.md         # fresh log
-  - create COULD/LOG-<year><Q>.log          # fresh feedback version log (start at v1)
   - copy PIPE-<prev>.yml to PIPE-<year><Q>.yml and update quarter references throughout

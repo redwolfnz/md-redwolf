@@ -95,11 +95,17 @@ replaces the old instruction to `fetch()` each LinkedIn page URL directly.
    - **Malformed entry** — flag as MISSING and skip; don't block the batch
      on one bad entry.
 
-5. **Summarize per connection.**
-   For each connection with usable data, write 1–2 sentences on anything from
-   `recentPosts` / `bio` that's relevant to the upcoming content angles —
-   campaigns, product launches, awards, hiring pushes, partnership news.
-   Connections with nothing notable get a one-line "no relevant activity."
+5. **Filter to the last 7 days, then summarize.**
+   Before summarising, filter `recentPosts` to posts whose `date` is within
+   the last 7 days (today − 7 days to today, inclusive). This is the same
+   rolling window `gen_pr_body.py` uses for the PR's "Connection activity"
+   section — keeping research and PR in sync so both fairly represent this
+   week's signals.
+
+   For each connection with posts in the window, write 1–2 sentences on
+   anything relevant to the upcoming content angles — campaigns, product
+   launches, awards, hiring pushes, partnership news.
+   Connections with no posts in the window get a one-line "no activity (last 7 days)."
 
 6. **Hand off to 1b.**
    Produce a short findings block (per-connection summary + any
