@@ -212,6 +212,10 @@ function mediaLink(row) {
   return `<div class="post-media"><a href="${url}" target="_blank">${label}</a></div>`;
 }
 
+const LS_KEY = `feedback-${OWNER}-${REPO}`;
+function lsGet()       { try { return JSON.parse(localStorage.getItem(LS_KEY) || "{}"); } catch { return {}; } }
+function lsSet(id, fb) { try { const d = lsGet(); d[id] = fb; localStorage.setItem(LS_KEY, JSON.stringify(d)); } catch {} }
+
 async function submitFeedback(postId, result, comment, btn, statusEl, allBtns, commentOnly = false) {
   allBtns.forEach(b => b.disabled = true);
   statusEl.textContent = "Submitting…";
@@ -235,15 +239,18 @@ async function submitFeedback(postId, result, comment, btn, statusEl, allBtns, c
         allBtns.forEach(b => { b.style.opacity = activeResult && b.dataset.result !== activeResult ? "0.35" : ""; });
         statusEl.textContent = comment ? "Comment saved" : "Comment cleared";
         statusEl.className = "status ok";
+        lsSet(postId, { result: activeResult || "", comment });
       } else if (result === "") {
         allBtns.forEach(b => { b.classList.remove("active"); b.style.opacity = ""; });
         statusEl.textContent = "Cleared";
         statusEl.className = "status";
+        lsSet(postId, { result: "", comment: "" });
       } else {
         allBtns.forEach(b => { b.classList.remove("active"); b.style.opacity = b.dataset.result !== result ? "0.35" : ""; });
         btn.classList.add("active");
         statusEl.textContent = `Saved: ${result}`;
         statusEl.className = "status ok";
+        lsSet(postId, { result, comment });
       }
       allBtns.forEach(b => b.disabled = false);
       return true;
@@ -261,7 +268,12 @@ async function submitFeedback(postId, result, comment, btn, statusEl, allBtns, c
 async function load() {
   const res = await fetch(CSV_URL + "?t=" + Date.now());
   const text = await res.text();
-  const rows = parseCSV(text);
+  const lsData = lsGet();
+  const rows = parseCSV(text).map(row => {
+    const ls = lsData[row.item];
+    if (ls) { row.feedback = ls.result ?? row.feedback; row["feedback-comment"] = ls.comment ?? row["feedback-comment"]; }
+    return row;
+  });
 
   const qMatch = CSV_URL.match(/TABLE-(\d{4})(Q\d)\.csv/i);
   const qLabel = qMatch ? `${qMatch[2]} ${qMatch[1]}` : "";
