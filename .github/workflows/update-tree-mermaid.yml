@@ -1,7 +1,9 @@
 name: update-tree-mermaid
 
-# Regenerates the Mermaid mindmap in the pinned "Content Tree — Live View"
-# issue whenever CAN/TREE-2026Q3.json changes on main.
+# Whenever CAN/TREE-2026Q3.json changes on main:
+#   1. Updates (or creates) the pinned "Content Tree — Live View" issue.
+#   2. Updates the Mermaid block in any open PR descriptions that contain
+#      <!-- TREE-START --> / <!-- TREE-END --> markers.
 # Update the paths filter at quarter rollover.
 
 on:
@@ -13,6 +15,7 @@ on:
 
 permissions:
   issues: write
+  pull-requests: write
 
 jobs:
   update:
@@ -26,6 +29,8 @@ jobs:
 
       - name: Generate Mermaid block
         run: python3 .github/scripts/gen_tree_mermaid.py > /tmp/mermaid.md
+
+      # ── Pinned issue ────────────────────────────────────────────────────
 
       - name: Build issue body
         run: |
@@ -63,3 +68,27 @@ jobs:
           else
             gh issue edit "$ISSUE" --body-file /tmp/issue_body.md
           fi
+
+      # ── Open PR descriptions ─────────────────────────────────────────────
+
+      - name: Update Mermaid section in open PRs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBERS=$(gh pr list --state open --json number --jq '.[].number')
+
+          for PR in $PR_NUMBERS; do
+            # Write PR body to a temp file to avoid shell quoting issues
+            gh pr view "$PR" --json body --jq '.body' > /tmp/pr_body.md
+
+            # Skip PRs that don't have the markers
+            if ! grep -qF '<!-- TREE-START -->' /tmp/pr_body.md; then
+              continue
+            fi
+
+            python3 .github/scripts/replace_tree_section.py \
+              /tmp/pr_body.md /tmp/mermaid.md > /tmp/updated_body.md
+
+            gh pr edit "$PR" --body-file /tmp/updated_body.md
+            echo "Updated PR #$PR description."
+          done
