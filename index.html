@@ -202,7 +202,7 @@ function mediaLink(row) {
             <div class="post-media"><a href="${url}" target="_blank">${label}</a></div>`;
   }
   if (/\.pdf$/i.test(url)) {
-    return `<div class="media-box"><embed class="pdf-preview" src="${url}" type="application/pdf"><span class="media-type-badge">PDF</span></div>
+    return `<div class="media-box"><embed class="pdf-preview" data-pdf="${url}" type="application/pdf"><span class="media-type-badge">PDF</span></div>
             <div class="post-media"><a href="${url}" target="_blank">${label}</a></div>`;
   }
   if (/\.mp4$/i.test(url)) {
@@ -380,6 +380,15 @@ async function load() {
     });
 
     container.appendChild(div);
+  });
+
+  // Load PDFs as same-origin blob URLs so the browser renders inline instead of downloading
+  container.querySelectorAll("embed[data-pdf]").forEach(async (embed) => {
+    try {
+      const res = await fetch(embed.dataset.pdf);
+      const blob = await res.blob();
+      embed.src = URL.createObjectURL(blob);
+    } catch { /* leave without src — shows nothing, link below still works */ }
   });
 
   // Populate dynamic filter dropdowns
