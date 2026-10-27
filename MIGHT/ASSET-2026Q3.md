@@ -2,6 +2,27 @@ ASSET LOG
 
 ####### <!-- ANCHOR MARKER - ADD ALL NEW ASSET ENTRIES DIRECTLY BELOW THIS LINE -->
 
+## ASSET:redwolf 2026-10-27 -> Repo housekeeping: folder renames, README.TXT→README.md, step restructure
+
+**Folder renames (git mv — all references updated):**
+- `COULD/TABLE-2026Q3.csv` → `MAY/TABLE-2026Q3.csv`
+- `MAY/ASSET-2026Q3.md` → `MIGHT/ASSET-2026Q3.md`
+- `MIGHT/LOG-2026Q3.log` → `COULD/LOG-2026Q3.log`
+
+References updated in: `README.md`, `index.html`, `update-feedback.yml`, `fetch-linkedin.yml`, `fetch_linkedin_cache.py`, `SKILL.md`. Historical entries in this log left intact.
+
+**README.TXT → README.md:**
+Plain text converted to Markdown — headers, tables, fenced code blocks, collapsible PR template. All `README.TXT` functional references updated to `README.md`.
+
+**Step restructure:**
+- Steps B / 3 / 4 / 5 collapsed into Step 2 sub-steps (2a–2e).
+- New **Step 2a**: checklist to update TREE / LOG / CSV / ASSET before committing.
+- **Step 2b** (Open Weekly PR): PR template expanded with dedicated sections for Posts, Activity log, Assets, and Content Strategy Tree.
+- Removed **Review** step (was 2d) — formal review gate dropped.
+- Removed **Publish** step (was 2e) — orchestration now ends at media.
+
+Final step structure: Step 1 (Research 1a/1b/1c) → Step 2 (Generate) → 2a (Update files) → 2b (Open PR) → 2c (Media).
+
 ## ASSET:redwolf 2026-10-27 -> Week 44 batch generated; PR #1 opened with auto-updating Mermaid content tree
 
 **Week 44 content batch — post-013 to post-018 (all BLOCKED pending media):**
