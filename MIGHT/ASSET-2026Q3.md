@@ -2,6 +2,10 @@ ASSET LOG
 
 ####### <!-- ANCHOR MARKER - ADD ALL NEW ASSET ENTRIES DIRECTLY BELOW THIS LINE -->
 
+## ASSET:redwolf 2026-10-27 -> Feedback: direct CSV write via Contents API PUT (~1–2s)
+
+Replaced `repository_dispatch` → `update-feedback.yml` (~15–20s) with a direct PUT to the GitHub Contents API. SHA tracked globally (`csvSha`) and updated after each write. `csvRows` and `csvHeaders` held in memory for serialization. `serializeCSV()` replicates Python `csv.QUOTE_ALL`. `update-feedback.yml` workflow left in place but no longer active — can retire next quarter rollover.
+
 ## ASSET:redwolf 2026-10-27 -> UI/data fixes: PDF preview, CSV freshness, feedback persistence
 
 **PDF preview:** Replaced Google Docs Viewer iframe (triggered "viewer" save-as) with `<embed type="application/pdf">` loaded via blob URL. Raw.githubusercontent.com serves files as `application/octet-stream` — switched all media URLs to `https://redwolfnz.github.io/md-redwolf/` (GitHub Pages serves correct MIME types).
