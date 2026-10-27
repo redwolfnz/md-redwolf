@@ -28,20 +28,11 @@ def gen_mermaid(path: str) -> str:
         f'  ROOT(["🔴 Red Wolf · {quarter}"])',
     ]
 
-    for cat in data["tree"]:
-        cat_id = safe_id(cat["category"])
-        lines.append(f'  ROOT --> {cat_id}["{cat["category"]}"]')
-        for t in cat["types"]:
-            type_id = f'{cat_id}_{safe_id(t["type"])}'
-            lines.append(f'  {cat_id} --> {type_id}["{t["type"]}"]')
-            for s in t["subtypes"]:
-                sub_id = f'{type_id}_{safe_id(s["name"])}'
-                lines.append(f'  {type_id} --> {sub_id}("{s["name"]}")')
-
+    # connections{} comes before tree[] in the JSON — render it first
     conns = data.get("connections", {})
     if conns:
-        lines.append('  ROOT --> CONNECTIONS["Connections"]')
-        group_labels = {"own": "Own", "associations": "Associations", "partners": "Partners"}
+        lines.append('  ROOT --> CONNECTIONS["connections"]')
+        group_labels = {"own": "own", "associations": "associations", "partners": "partners"}
         for group, label in group_labels.items():
             members = conns.get(group, {})
             if not members:
@@ -51,6 +42,18 @@ def gen_mermaid(path: str) -> str:
             for name in members:
                 mem_id = f'{grp_id}_{safe_id(name)}'
                 lines.append(f'  {grp_id} --> {mem_id}("{name}")')
+
+    # tree[] — grouped under a TREE node to match JSON structure
+    lines.append('  ROOT --> TREE["tree"]')
+    for cat in data["tree"]:
+        cat_id = safe_id(cat["category"])
+        lines.append(f'  TREE --> {cat_id}["{cat["category"]}"]')
+        for t in cat["types"]:
+            type_id = f'{cat_id}_{safe_id(t["type"])}'
+            lines.append(f'  {cat_id} --> {type_id}["{t["type"]}"]')
+            for s in t["subtypes"]:
+                sub_id = f'{type_id}_{safe_id(s["name"])}'
+                lines.append(f'  {type_id} --> {sub_id}("{s["name"]}")')
 
     lines.append("```")
     return "\n".join(lines)
