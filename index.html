@@ -172,7 +172,8 @@
 const OWNER  = "redwolfnz";
 const REPO   = "md-redwolf";
 const TOKEN  = "__REVIEW_PAT__".startsWith("__") ? (window.__MD_REDWOLF__ || "") : "__REVIEW_PAT__";
-const CSV_URL = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/COULD/TABLE-2026Q3.csv`;
+const CSV_PATH = `COULD/TABLE-2026Q3.csv`;
+const CSV_URL  = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/${CSV_PATH}`;
 
 function parseCSV(text) {
   const lines = text.trim().replace(/\r/g, "").split("\n");
@@ -265,9 +266,21 @@ async function submitFeedback(postId, result, comment, btn, statusEl, allBtns, c
   }
 }
 
-async function load() {
+async function fetchCSV() {
+  if (TOKEN) {
+    const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${CSV_PATH}`, {
+      headers: { "Authorization": `Bearer ${TOKEN}`, "Accept": "application/vnd.github+json" }
+    });
+    const json = await res.json();
+    const bytes = Uint8Array.from(atob(json.content.replace(/\n/g, "")), c => c.charCodeAt(0));
+    return new TextDecoder("utf-8").decode(bytes);
+  }
   const res = await fetch(CSV_URL + "?t=" + Date.now());
-  const text = await res.text();
+  return res.text();
+}
+
+async function load() {
+  const text = await fetchCSV();
   const lsData = lsGet();
   const rows = parseCSV(text).map(row => {
     const ls = lsData[row.item];
