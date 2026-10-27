@@ -147,8 +147,8 @@ git push
 ## Next steps
 
 - [ ] Generate media for post-0XX to post-0XX (Step 2c)
-- [ ] Client review via index site (Step 2d)
-- [ ] Update status from BLOCKED → READY when media is approved
+- [ ] Update status from BLOCKED → READY when media is ready
+- [ ] Publish (Step 2d)
 
 ---
 
@@ -167,11 +167,7 @@ git push
 
 Generate or source media, save to `COULD/media/<quarter>/`, log each asset in `MIGHT/ASSET-2026Q3.md`.
 
-#### Step 2d — Review
-
-Client reviews posts via the index site (GitHub Pages). Feedback is written back to the CSV via GitHub Actions.
-
-#### Step 2e — Publish
+#### Step 2d — Publish
 
 Download media locally (LinkedIn does not accept URLs). Copy title, description, tags, and hashtags from the CSV. Upload to LinkedIn and log outcome in `COULD/LOG-2026Q3.log`.
 
