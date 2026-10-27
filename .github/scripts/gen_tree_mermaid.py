@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
-"""Generate a Mermaid mindmap block from CAN/TREE-<quarter>.json.
+"""Generate a Mermaid graph LR from CAN/TREE-<quarter>.json.
 
-Writes the block to stdout. Called by update-tree-mermaid.yml.
-Update TREE_FILE at quarter rollover.
+Writes a ```mermaid block to stdout.
+Called by update-tree-mermaid.yml; update TREE_FILE at quarter rollover.
 """
 
 import json
+import re
 import sys
 
 TREE_FILE = "CAN/TREE-2026Q3.json"
+
+
+def safe_id(text: str) -> str:
+    """Strip non-alphanumeric chars to make a valid Mermaid node id."""
+    return re.sub(r"[^A-Za-z0-9]", "_", text)
 
 
 def gen_mermaid(path: str) -> str:
@@ -18,16 +24,19 @@ def gen_mermaid(path: str) -> str:
     quarter = data["meta"]["quarter"]
     lines = [
         "```mermaid",
-        "mindmap",
-        f"  root((Red Wolf<br/>Content Tree<br/>{quarter}))",
+        "graph LR",
+        f'  ROOT(["🔴 Red Wolf · {quarter}"])',
     ]
 
     for cat in data["tree"]:
-        lines.append(f"    {cat['category']}")
+        cat_id = safe_id(cat["category"])
+        lines.append(f'  ROOT --> {cat_id}["{cat["category"]}"]')
         for t in cat["types"]:
-            lines.append(f"      {t['type']}")
+            type_id = f'{cat_id}_{safe_id(t["type"])}'
+            lines.append(f'  {cat_id} --> {type_id}["{t["type"]}"]')
             for s in t["subtypes"]:
-                lines.append(f"        {s['name']}")
+                sub_id = f'{type_id}_{safe_id(s["name"])}'
+                lines.append(f'  {type_id} --> {sub_id}("{s["name"]}")')
 
     lines.append("```")
     return "\n".join(lines)
