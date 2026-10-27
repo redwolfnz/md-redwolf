@@ -15,7 +15,7 @@ what the fetch-linkedin skill (STEP 1a) already treats as MISSING.
 
 Quarter is hardcoded as 2026Q3, matching every other file in this
 repo this quarter — update it at quarter rollover alongside the rest
-of README.TXT's QUARTER ROLLOVER section.
+of README.md's QUARTER ROLLOVER section.
 """
 
 import json
