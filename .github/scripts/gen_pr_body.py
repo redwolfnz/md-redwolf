@@ -125,13 +125,13 @@ def gen_pr_body(week: int) -> str:
 {mermaid_block()}
 <!-- TREE-END -->
 
-## Connection activity (`MAY/`)
-
-{connection_activity(week)}
-
 ## Posts (`COULD/TABLE-{QUARTER}.csv`)
 
 {posts_table(week)}
+
+## Connection activity (`MAY/`)
+
+{connection_activity(week)}
 
 ## Assets (`MIGHT/ASSET-{QUARTER}.md`)
 
