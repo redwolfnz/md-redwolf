@@ -1,0 +1,65 @@
+name: update-tree-mermaid
+
+# Regenerates the Mermaid mindmap in the pinned "Content Tree — Live View"
+# issue whenever CAN/TREE-2026Q3.json changes on main.
+# Update the paths filter at quarter rollover.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'CAN/TREE-2026Q3.json'
+  workflow_dispatch: {}
+
+permissions:
+  issues: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Generate Mermaid block
+        run: python3 .github/scripts/gen_tree_mermaid.py > /tmp/mermaid.md
+
+      - name: Build issue body
+        run: |
+          {
+            echo "## Red Wolf Content Tree — Live View"
+            echo ""
+            echo "Auto-updated from \`CAN/TREE-2026Q3.json\` on every push to main."
+            echo "Comment below to suggest changes to the tree structure."
+            echo ""
+            cat /tmp/mermaid.md
+          } > /tmp/issue_body.md
+
+      - name: Ensure tree-view label exists
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create tree-view \
+            --color "#0075ca" \
+            --description "Auto-updated content tree view" 2>/dev/null || true
+
+      - name: Update or create tree-view issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ISSUE=$(gh issue list \
+            --label tree-view \
+            --state open \
+            --json number \
+            --jq '.[0].number // empty')
+          if [ -z "$ISSUE" ]; then
+            gh issue create \
+              --title "Content Tree — Live View" \
+              --label tree-view \
+              --body-file /tmp/issue_body.md
+          else
+            gh issue edit "$ISSUE" --body-file /tmp/issue_body.md
+          fi
