@@ -107,7 +107,7 @@ steps:
 
       - id: 2c
         name: media
-        # Generate or source media. Save to COULD/media/<quarter>/.
+        # Generate or source media. Save to MAY/media/<quarter>/.
         # Log each asset in MIGHT/ASSET-2026Q3.md.
         writes:
           - MAY/media/2026Q3/
