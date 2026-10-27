@@ -1,97 +1,36 @@
-LOG
+LOG — 2026Q3 — v3
 
 ####### <!-- ANCHOR MARKER - ADD ALL NEW LOG ENTRIES DIRECTLY BELOW THIS LINE -->
 
-## WEEK 44 — 2026-10-27 NZT
+## v3 — w44 — 2026-10-27
 
-Week 44 batch generated — post-013 to post-018 (all BLOCKED).
+| Post | Pillar | Subtype | Score | Media | Feedback |
+|------|--------|---------|-------|-------|----------|
+| post-013 | SERVICES | IQP Inspections | 7 | png | — |
+| post-014 | INDUSTRY | Government Policy | 8 | png | — |
+| post-015 | AUTHORITY | Expert Opinion | 8 | png | — |
+| post-016 | PEOPLE | Staff Profiles | 7 | jpg | — |
+| post-017 | TRUST | Govt & Critical Infrastructure | 9 | pdf | — |
+| post-018 | ENGAGEMENT | Security Awareness Month | 8 | gif | — |
 
-Step 1a findings that drove selection:
-- NZSA: Minister Mitchell at ASIS NZ Chapter event (Oct 15) — PSR/legislative changes → INDUSTRY / Government Policy
-- ASIS: active assailant preparedness study (Oct 22); <50% orgs confident in staff response → AUTHORITY / Expert Opinion
-- REDWOLF/NZSA: Shamal Kumar NZSA finalist; awards spotlight series concluded Oct 19 → PEOPLE / Staff Profiles
-- INNERRANGE: SAGE 2026 (govt/defence/critical infra, Nov 19, Canberra) — timely govt case study hook → TRUST / Govt & Critical Infrastructure
-- Editorial: IQP Inspections not yet used; end-of-year compliance window → SERVICES / IQP Inspections
-- Editorial: final week of October = last Security Awareness Month window → ENGAGEMENT / Security Awareness Month
-- BOSCH: confirmed dead again — Keenfinity Group since Jul 2026; not tagged
-- JACQUES: last post Jun 2026 — not tagged
+## v2 — w43 — 2026-10-23
 
-Media spread (4 distinct types — satisfies rule 8):
-  post-013 SERVICES / Consulting & Design / IQP Inspections (score 7, png)
-  post-014 INDUSTRY / Regulation & Compliance / Government Policy (score 8, png)
-  post-015 AUTHORITY / Thought Leadership / Expert Opinion (score 8, png)
-  post-016 PEOPLE / Team Spotlight / Staff Profiles (score 7, jpg)
-  post-017 TRUST / Case Studies / Government & Critical Infrastructure (score 9, pdf)
-  post-018 ENGAGEMENT / Campaigns & Seasonal / Security Awareness Month (score 8, gif)
+| Post | Pillar | Subtype | Score | Media | Feedback |
+|------|--------|---------|-------|-------|----------|
+| post-007 | SERVICES | Systems Monitoring | 7 | gif | — |
+| post-008 | INDUSTRY | Cybersecurity Convergence | 8 | png | win → cleared |
+| post-009 | AUTHORITY | NZSA Membership | 8 | jpg | — |
+| post-010 | PEOPLE | Career Growth | 8 | mp4 | — |
+| post-011 | TRUST | Residential | 9 | pdf | — |
+| post-012 | ENGAGEMENT | Questions & Debates | 7 | png | — |
 
-## VERSION 4 — 2026-10-23 NZT
+## v1 — w42 — 2026-10-13
 
-Week 43 redone again (v3 → v4) — post-007 to post-012 replaced (all BLOCKED).
-README updated: gif added as media type; rule 8 added (≥3 distinct media types per batch).
-v2 media files (actual PNGs/PDF pushed by web Claude) removed — orphaned by the redo.
-
-Step 1a findings that drove v4 selection:
-- INNERRANGE: T4000 Pro (Oct 02) — 4G LTE + dual-SIM failover → SERVICES / Systems Monitoring
-- ASIS: IT/OT governance gap session (Oct 20) + banking deepfakes event (Oct 21) → INDUSTRY / Cybersecurity Convergence
-- NZSA: position statement on confidential info when staff leave (Oct 12) → AUTHORITY / NZSA Membership
-- REDWOLF: 11% employee growth, recent hires (Jul 21 cache) → PEOPLE / Career Growth
-- TRUST: Residential not yet used in quarter — editorial selection for variety
-- REDWOLF: poll post (Oct 20) promised results next week → ENGAGEMENT / Questions & Debates (poll results follow-through)
-- BOSCH: confirmed dead (Keenfinity Group since Jul 2026) — not tagged
-
-Media spread (5 distinct types — satisfies new rule 8):
-  post-007 SERVICES / Monitoring & Response / Systems Monitoring (score 7, gif)
-  post-008 INDUSTRY / Threat Intelligence / Cybersecurity Convergence (score 8, png)
-  post-009 AUTHORITY / Accreditations & Partnerships / NZSA Membership (score 8, jpg)
-  post-010 PEOPLE / Careers / Career Growth (score 8, mp4)
-  post-011 TRUST / Case Studies / Residential (score 9, pdf)
-  post-012 ENGAGEMENT / Interactive / Questions & Debates (score 7, png)
-
-## VERSION 3 — 2026-10-23 NZT
-
-Week 43 redone — post-007 to post-012 replaced (all BLOCKED).
-First batch generated using live LinkedIn cache data (fetch-linkedin pipeline confirmed live).
-
-Step 1a findings that drove selection:
-- GALLAGHER: Self-service Access Schedules + Duress Code (Oct 16) → SERVICES / Access Control
-- NZSA + ASIS: Mark Mitchell (Minister of Police) at ASIS NZ chapter meeting → INDUSTRY / Government Policy
-- INNERRANGE: IR Connect 3.9.0 (Oct 14) + IDEMIA biometrics 1.6 → AUTHORITY / Supplier Partnerships
-- REDWOLF: Oct 20 poll promised results "next week" → ENGAGEMENT / Questions & Debates
-- INNERRANGE SAGE expo + ICT banking security → TRUST / Govt & Critical Infrastructure
-- PEOPLE: Company Culture selected for quarter balance (no direct cache signal)
-
-Flag from 1a: Bosch Security page is dead (rebranded to Keenfinity Group / IQSIGHT + Radionix since July 2026).
-Connections{} in TREE-2026Q3.json should be updated before Q4 rollover.
-
-New subtypes (none repeat from w42):
-  post-007 SERVICES / Electronic Security / Access Control (score 7)
-  post-008 INDUSTRY / Regulation & Compliance / Government Policy (score 8)
-  post-009 AUTHORITY / Accreditations & Partnerships / Supplier Partnerships (score 8)
-  post-010 PEOPLE / Culture & Values / Company Culture (score 8)
-  post-011 TRUST / Case Studies / Government & Critical Infrastructure (score 9)
-  post-012 ENGAGEMENT / Interactive / Questions & Debates (score 7)
-
-## VERSION 2 — 2026-10-22 15:56 NZT
-
-Commit: 64f00b7
-Week 43 batch regenerated fresh — post-007 to post-012 (all BLOCKED).
-
-Prompt changes from v1:
-- README.TXT expanded to full orchestration source: structure, plan steps,
-  generation rules, scoring guide, extending the tree
-- STEP 1 RESEARCH added — LinkedIn connections browsed before generating
-  (LinkedIn blocked unauthenticated access; slugs confirmed valid)
-- MUST/README.TXT reduced to pointer only
-- Scoring guide formalised: base pillar scores + type/subtype adjustments
-- Folder structure renamed: MUST→CAN, SHOULD→COULD, COULD→MAY, WOULD→MIGHT
-- Step 1b updated: subtype selection driven by 1a findings, not quarter history
-- IQP Inspections added to tree under SERVICES / Consulting & Design
-- Sources column added to TABLE
-- Week 43 fresh start: IQP Inspections, AI in Surveillance, Expert Opinion,
-  Career Growth, NZSA Accreditation, Security Awareness Month
-
-## VERSION 1 — 2026-10-13 16:18 NZT
-
-Commit: e5e59ec
-Week 42 batch — post-001 to post-006 (first client-signoff version).
-First feedback received at 16:19 NZT (post-001 win, commit 24e5c31).
+| Post | Pillar | Subtype | Score | Media | Feedback |
+|------|--------|---------|-------|-------|----------|
+| post-001 | SERVICES | CCTV | 7 | png | win |
+| post-002 | INDUSTRY | Emerging Risks | 8 | png | — |
+| post-003 | AUTHORITY | Team Certifications | 10 | png | — |
+| post-004 | PEOPLE | Behind the Scenes | 8 | mp4 | — |
+| post-005 | TRUST | Commercial | 9 | pdf | — |
+| post-006 | ENGAGEMENT | Polls | 7 | png | win |

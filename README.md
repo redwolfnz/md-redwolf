@@ -100,7 +100,7 @@ Open `MAY/TABLE-2026Q3.csv` and add 6 new rows for the next week number — one 
 Before committing, update each file that changed this week:
 
 - **`CAN/TREE-2026Q3.json`** — add any new subtypes selected this batch (if the subtype didn't exist in the tree yet)
-- **`COULD/LOG-2026Q3.log`** — append the week batch summary entry (signals, media spread)
+- **`COULD/LOG-2026Q3.log`** — append a new version entry (v<N>) with the week's posts table and feedback column set to `—`
 - **`MAY/TABLE-2026Q3.csv`** — already updated in Step 2; verify all 6 rows are complete and correct
 - **`MIGHT/ASSET-2026Q3.md`** — append entries for any new media assets created or decisions made
 
@@ -222,7 +222,7 @@ Score = base pillar score, adjusted down by type or subtype where the content ca
 | `MAY/TABLE-2026Q3.csv` | all posts, all weeks |
 | `COULD/media/2026Q3/` | post media files |
 | `MIGHT/ASSET-2026Q3.md` | asset log (status, verify notes) |
-| `COULD/LOG-2026Q3.log` | activity log |
+| `COULD/LOG-2026Q3.log` | versioned feedback log — one entry per weekly batch, tracks feedback per post |
 | `.claude/skills/fetch-linkedin/` | Step 1a skill (reads the cache above) |
 | `.github/workflows/fetch-linkedin.yml` | weekly cache-refresh Action |
 
@@ -234,5 +234,5 @@ At the start of a new quarter:
 - Create `CAN/TREE-<year><Q>.json` — copy + update meta
 - Create `MAY/TABLE-<year><Q>.csv` — new header, empty rows
 - Create `MIGHT/ASSET-<year><Q>.md` — fresh log
-- Create `COULD/LOG-<year><Q>.log` — fresh log
+- Create `COULD/LOG-<year><Q>.log` — fresh feedback version log (start at v1)
 - Update this file: client, quarter, key files section
