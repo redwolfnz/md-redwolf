@@ -91,21 +91,15 @@ STEP 2 — GENERATE
   Set all new posts to BLOCKED status until media is ready
 
 STEP B — OPEN WEEKLY PR
-  After STEP 2, open a pull request so the client can review posts and
-  track progress through STEPS 3–5. All subsequent commits (media, status
-  changes, feedback) go onto the same branch until merge.
+  After STEP 2, commit directly to main and open a PR from main so the
+  client can review posts and suggest changes through STEPS 3–5.
 
-  1. Create a branch:
-       git checkout -b content/w<NN>-batch
-
-  2. Stage and commit the generated files:
+  1. Stage and commit the generated files:
        git add COULD/TABLE-2026Q3.csv MIGHT/LOG-2026Q3.log
        git commit -m "content(w<NN>): generate week <NN> batch — post-0XX to post-0XX"
+       git push
 
-  3. Push the branch:
-       git push -u origin content/w<NN>-batch
-
-  4. Open the PR using the template below.
+  2. Open the PR using the template below.
      The <!-- TREE-START --> / <!-- TREE-END --> markers tell the
      update-tree-mermaid GitHub Action where to refresh the Mermaid
      diagram automatically whenever CAN/TREE-<quarter>.json changes on main.
