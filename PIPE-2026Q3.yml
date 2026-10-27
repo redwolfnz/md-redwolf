@@ -1,0 +1,184 @@
+# Red Wolf — LinkedIn Content Orchestration Pipeline
+# Client: Red Wolf High Level Security Ltd
+# Platform: LinkedIn
+# Last updated: 2026-10-27
+
+meta:
+  name: Red Wolf LinkedIn Content Orchestration
+  client: Red Wolf High Level Security Ltd
+  platform: LinkedIn
+  quarter: 2026Q3
+
+# ── REPO STRUCTURE ──────────────────────────────────────────────────────────
+folders:
+  CAN:   strategy and rules        # what the content must follow
+  COULD: posts and media           # what the content should contain
+  MAY:   assets and values         # what the content could reference
+  MIGHT: activity log              # what has happened
+
+# ── CONTENT STRUCTURE ───────────────────────────────────────────────────────
+# tree[]
+#   category  — one of 6 pillars (see pillars below)
+#     type    — content format within that pillar
+#       subtype — specific angle or topic
+#
+# pillars:
+#   SERVICES    — what Red Wolf does (installs, monitoring, consulting)
+#   INDUSTRY    — market context (threats, regulation, technology)
+#   AUTHORITY   — credibility signals (awards, thought leadership, partnerships)
+#   PEOPLE      — human side (team, culture, careers)
+#   TRUST       — proof (case studies, testimonials, certifications)
+#   ENGAGEMENT  — audience interaction (polls, debates, campaigns)
+
+# ── STEPS ───────────────────────────────────────────────────────────────────
+steps:
+
+  - id: step-1
+    name: Research
+    substeps:
+
+      - id: 1a
+        name: fetch-linkedin
+        skill: .claude/skills/fetch-linkedin/
+        reads:
+          - CAN/TREE-2026Q3.json
+          - CAN/TREE-*-2026Q3.json
+        # Reads connections{} from TREE JSON then each TREE-<SLUG> cache file.
+        # Cache built by: GitHub Action → Cloudflare Tunnel
+        #   → py-redwolf/listener.py on mac mini
+        #   → browse_linkedin.py (Playwright, saved session) → JSON per slug
+        #   → Action commits CAN/TREE-<SLUG>-2026Q3.json to this repo
+        # Do not tag a connection whose recentPosts[] is empty or stale.
+        # Fallback: run a web search for the slug if cache is missing or stale.
+
+      - id: 1b
+        name: select-topic
+        reads:
+          - CAN/TREE-2026Q3.json
+        # For each of the 6 pillars select a type and subtype relevant to 1a findings.
+        # Recent partner activity, industry news, or campaign timing should inform the angle.
+        # Apply scoring guide to assign a score to each post.
+
+      - id: 1c
+        name: choose-artifact
+        # Decide media-type for each post:
+        media_types:
+          png: branded graphic, infographic, diagram, card, timeline
+          jpg: photo (staff, site, event)
+          gif: short looping animation (diagram, flow, before/after)
+          pdf: multi-slide carousel / document
+          mp4: video
+
+  - id: step-2
+    name: Generate
+    # Open MAY/TABLE-2026Q3.csv and add 6 new rows — one per pillar.
+    # topic / type / subtopic / score / media-type already decided from Step 1.
+    # Write title, description, tags, hashtags.
+    # tags: @Red Wolf always; partners only if directly relevant.
+    # Set all new posts to BLOCKED.
+    writes:
+      - MAY/TABLE-2026Q3.csv
+    substeps:
+
+      - id: 2a
+        name: update-key-files
+        # Update each file that changed this week before committing.
+        files:
+          - path: CAN/TREE-2026Q3.json
+            action: add any new subtypes selected this batch
+          - path: COULD/LOG-2026Q3.log
+            action: append new version entry (v<N>) — posts table, feedback column set to —
+          - path: MAY/TABLE-2026Q3.csv
+            action: verify all 6 rows are complete and correct
+          - path: MIGHT/ASSET-2026Q3.md
+            action: append entries for new media assets or decisions
+
+      - id: 2b
+        name: open-weekly-pr
+        # TREE-START / TREE-END markers trigger the update-tree-mermaid Action.
+        # PR sections order: CAN tree → COULD log → MAY posts → MIGHT assets.
+        commit: "content(w<NN>): generate week <NN> batch — post-0XX to post-0XX"
+        git_add:
+          - CAN/TREE-2026Q3.json
+          - COULD/LOG-2026Q3.log
+          - MAY/TABLE-2026Q3.csv
+          - MIGHT/ASSET-2026Q3.md
+        pr_body_script: .github/scripts/gen_pr_body.py
+        # Usage:
+        #   python3 .github/scripts/gen_pr_body.py <NN> > /tmp/pr_body.md
+        #   gh pr create --title "content(w<NN>): ..." --body-file /tmp/pr_body.md
+
+      - id: 2c
+        name: media
+        # Generate or source media. Save to COULD/media/<quarter>/.
+        # Log each asset in MIGHT/ASSET-2026Q3.md.
+        writes:
+          - COULD/media/2026Q3/
+          - MIGHT/ASSET-2026Q3.md
+
+# ── RULES ───────────────────────────────────────────────────────────────────
+rules:
+  - One post per pillar per week — 6 posts per batch
+  - Do not repeat the same subtype within the same quarter
+  - Score each post using the scoring guide
+  - Step 1 must be completed before Step 2 — subtype selection in 1b must be informed by 1a findings
+  - Only tag partners when the post is directly relevant to their product or domain
+  - Set media-type to the expected output file format (see Step 1c media_types)
+  - All new posts go into MAY/TABLE-2026Q3.csv with status BLOCKED until media and approvals are in place
+  - Each batch must use at least 3 distinct media types
+
+# ── SCORING ─────────────────────────────────────────────────────────────────
+# Score = base pillar score, adjusted down by type/subtype where content
+# carries less authority or proof weight.
+#
+# Calculation:
+#   1. Start with base pillar score
+#   2. If type/subtype appears in adjustments below, use that value instead
+#   3. If subtype is weaker than the type average (e.g. poll vs campaign), round down by 1
+#   4. Final score must be between 1 and 10
+scoring:
+  base:
+    AUTHORITY:  10  # strongest credibility signal
+    TRUST:       9  # proof and social validation
+    INDUSTRY:    8  # market relevance
+    PEOPLE:      8  # human interest
+    SERVICES:    7  # what we do
+    ENGAGEMENT:  7  # audience interaction
+  adjustments:
+    "AUTHORITY / Awards & Milestones":        10  # no adjustment
+    "AUTHORITY / Thought Leadership":          8  # opinion, not proof
+    "AUTHORITY / Accreditations":              8  # credential signal
+    "TRUST / Case Studies":                    9  # no adjustment
+    "TRUST / Testimonials & Social Proof":     8  # softer than case study
+    "TRUST / Compliance & Certifications":     8
+    "PEOPLE / Team Spotlight / Staff Profile": 7  # lower reach
+    "ENGAGEMENT / Campaigns & Seasonal":       8  # higher reach potential
+
+# ── EXTENDING THE TREE ──────────────────────────────────────────────────────
+# - New subtypes can be added to any existing type
+# - New types require a new entry under the relevant category
+# - New categories require a new pillar entry and a justification
+#   for why it fits the Red Wolf brand strategy
+# - Connection slugs must be verified on LinkedIn before adding
+
+# ── KEY FILES ───────────────────────────────────────────────────────────────
+key_files:
+  CAN/TREE-2026Q3.json:                content strategy skeleton
+  CAN/TREE-<SLUG>-2026Q3.json:         per-connection LinkedIn cache (written by fetch-linkedin.yml)
+  MAY/TABLE-2026Q3.csv:                all posts, all weeks
+  COULD/media/2026Q3/:                 post media files
+  MIGHT/ASSET-2026Q3.md:               asset log (status, verify notes)
+  COULD/LOG-2026Q3.log:                versioned feedback log — one entry per weekly batch
+  .claude/skills/fetch-linkedin/:      Step 1a skill
+  .github/scripts/gen_pr_body.py:      generates PR body from live data files (Step 2b)
+  .github/scripts/gen_tree_mermaid.py: generates Mermaid diagram from TREE JSON
+  .github/workflows/fetch-linkedin.yml: weekly cache-refresh Action
+  PIPE-2026Q3.yml:                     this file — orchestration pipeline definition
+
+# ── QUARTER ROLLOVER ────────────────────────────────────────────────────────
+quarter_rollover:
+  - create CAN/TREE-<year><Q>.json          # copy + update meta
+  - create MAY/TABLE-<year><Q>.csv          # new header, empty rows
+  - create MIGHT/ASSET-<year><Q>.md         # fresh log
+  - create COULD/LOG-<year><Q>.log          # fresh feedback version log (start at v1)
+  - copy PIPE-<prev>.yml to PIPE-<year><Q>.yml and update quarter references throughout
