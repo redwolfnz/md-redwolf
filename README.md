@@ -95,13 +95,11 @@ Open `MAY/TABLE-2026Q3.csv` and add 6 new rows for the next week number — one 
 - tags: @Red Wolf always; partners only if directly relevant
 - set all new posts to `BLOCKED` status until media is ready
 
----
+#### Step 2a — Open Weekly PR
 
-### Step B — Open Weekly PR
+Commit directly to main and open a PR so the client can review posts and suggest changes through steps 2b–2d.
 
-After Step 2, commit directly to main and open a PR from main so the client can review posts and suggest changes through Steps 3–5.
-
-**1. Stage and commit:**
+**Stage and commit:**
 
 ```bash
 git add MAY/TABLE-2026Q3.csv COULD/LOG-2026Q3.log
@@ -109,9 +107,7 @@ git commit -m "content(w<NN>): generate week <NN> batch — post-0XX to post-0XX
 git push
 ```
 
-**2. Open the PR using the template below.**
-
-The `<!-- TREE-START -->` / `<!-- TREE-END -->` markers tell the `update-tree-mermaid` GitHub Action where to refresh the Mermaid diagram automatically whenever `CAN/TREE-<quarter>.json` changes on main.
+**Open the PR using the template below.** The `<!-- TREE-START -->` / `<!-- TREE-END -->` markers tell the `update-tree-mermaid` GitHub Action where to refresh the Mermaid diagram automatically whenever `CAN/TREE-<quarter>.json` changes on main.
 
 <details>
 <summary>PR template</summary>
@@ -123,7 +119,7 @@ The `<!-- TREE-START -->` / `<!-- TREE-END -->` markers tell the `update-tree-me
 |------|--------|---------|-------|-------|
 | post-0XX | <PILLAR> | <Type> / <Subtype> | <score> | <ext> |
 
-## Research signals (STEP 1a)
+## Research signals (Step 1a)
 
 - **<CONNECTION>** (<date>) — <finding> → post-0XX
 - **BOSCH** — page inactive (Keenfinity Group since Jul 2026); not tagged
@@ -131,8 +127,8 @@ The `<!-- TREE-START -->` / `<!-- TREE-END -->` markers tell the `update-tree-me
 
 ## Next steps
 
-- [ ] Generate media for post-0XX to post-0XX (STEP 3)
-- [ ] Client review via index site (STEP 4)
+- [ ] Generate media for post-0XX to post-0XX (Step 2b)
+- [ ] Client review via index site (Step 2c)
 - [ ] Update status from BLOCKED → READY when media is approved
 
 ---
@@ -148,17 +144,15 @@ The `<!-- TREE-START -->` / `<!-- TREE-END -->` markers tell the `update-tree-me
 
 </details>
 
----
-
-### Step 3 — Media
+#### Step 2b — Media
 
 Generate or source media, save to `COULD/media/<quarter>/`, log each asset in `MIGHT/ASSET-2026Q3.md`.
 
-### Step 4 — Review
+#### Step 2c — Review
 
 Client reviews posts via the index site (GitHub Pages). Feedback is written back to the CSV via GitHub Actions.
 
-### Step 5 — Publish
+#### Step 2d — Publish
 
 Download media locally (LinkedIn does not accept URLs). Copy title, description, tags, and hashtags from the CSV. Upload to LinkedIn and log outcome in `COULD/LOG-2026Q3.log`.
 
@@ -169,7 +163,7 @@ Download media locally (LinkedIn does not accept URLs). Copy title, description,
 1. One post per pillar per week — 6 posts per batch.
 2. Do not repeat the same subtype within the same quarter.
 3. Score each post using the scoring guide below.
-4. Research (Step 1) must be completed before generating — subtype selection in 1b must be informed by what 1a found.
+4. Research (Step 1) must be completed before Step 2 — subtype selection in 1b must be informed by what 1a found.
 5. Only tag partners when the post is directly relevant to their product or domain.
 6. Set media-type to the expected output file format (see Step 1c table above).
 7. All new posts go into `MAY/TABLE-2026Q3.csv` with status `BLOCKED` until media and any required approvals are in place.
