@@ -115,8 +115,6 @@ def asset_entry() -> str:
 
 def gen_pr_body(week: int) -> str:
     return f"""\
-## Week {week:02d} — 6 posts, all BLOCKED pending media
-
 ## Content Strategy Tree (`CAN/TREE-{QUARTER}.json`)
 
 > Auto-updated whenever the tree JSON changes on main — suggest changes by commenting below.
