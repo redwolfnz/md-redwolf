@@ -202,8 +202,7 @@ function mediaLink(row) {
             <div class="post-media"><a href="${url}" target="_blank">${label}</a></div>`;
   }
   if (/\.pdf$/i.test(url)) {
-    const viewer = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
-    return `<div class="media-box"><iframe class="pdf-preview" src="${viewer}" title="${label}"></iframe><span class="media-type-badge">PDF</span></div>
+    return `<div class="media-box"><embed class="pdf-preview" src="${url}" type="application/pdf"><span class="media-type-badge">PDF</span></div>
             <div class="post-media"><a href="${url}" target="_blank">${label}</a></div>`;
   }
   if (/\.mp4$/i.test(url)) {
