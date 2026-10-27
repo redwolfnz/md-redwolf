@@ -148,7 +148,6 @@ git push
 
 - [ ] Generate media for post-0XX to post-0XX (Step 2c)
 - [ ] Update status from BLOCKED → READY when media is ready
-- [ ] Publish (Step 2d)
 
 ---
 
@@ -166,10 +165,6 @@ git push
 #### Step 2c — Media
 
 Generate or source media, save to `COULD/media/<quarter>/`, log each asset in `MIGHT/ASSET-2026Q3.md`.
-
-#### Step 2d — Publish
-
-Download media locally (LinkedIn does not accept URLs). Copy title, description, tags, and hashtags from the CSV. Upload to LinkedIn and log outcome in `COULD/LOG-2026Q3.log`.
 
 ---
 
