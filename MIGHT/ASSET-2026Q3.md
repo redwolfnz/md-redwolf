@@ -2,6 +2,12 @@ ASSET LOG
 
 ####### <!-- ANCHOR MARKER - ADD ALL NEW ASSET ENTRIES DIRECTLY BELOW THIS LINE -->
 
+## ASSET:redwolf 2026-10-27 -> UI comment feature unparked; save-file symptom under monitoring
+
+**Comment feature:** `.feedback-comment-row` and `.saved-comment` were parked (`display:none !important`). Unparked — now live. Saves to `feedback-comment` column in `COULD/TABLE-2026Q3.csv` via `update-feedback.yml` dispatch.
+
+**Save-file symptom (monitoring):** Prod URL (`https://redwolfnz.github.io/md-redwolf/`) serves correct `text/html` headers. No code-level cause found. Suspected: client-side (browser app, wrong raw URL, or Edge SmartScreen). Monitoring — investigate further if reported again.
+
 ## ASSET:redwolf 2026-10-27 -> Folder swap: COULD↔MAY (commit c5b2046)
 
 **New semantics:**
