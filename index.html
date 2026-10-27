@@ -213,24 +213,38 @@ function mediaLink(row) {
   return `<div class="post-media"><a href="${url}" target="_blank">${label}</a></div>`;
 }
 
+let csvSha     = null;
+let csvRows    = [];
+let csvHeaders = [];
+
+function serializeCSV(rows, headers) {
+  const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  return [headers.map(q).join(","), ...rows.map(r => headers.map(h => q(r[h] ?? "")).join(","))].join("\n") + "\n";
+}
+
+function toBase64(str) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = "";
+  bytes.forEach(b => { bin += String.fromCharCode(b); });
+  return btoa(bin);
+}
+
 async function submitFeedback(postId, result, comment, btn, statusEl, allBtns, commentOnly = false) {
+  if (!TOKEN || !csvSha) { statusEl.textContent = "Error: not ready"; statusEl.className = "status err"; return false; }
   allBtns.forEach(b => b.disabled = true);
-  statusEl.textContent = "Submitting…";
+  statusEl.textContent = "Saving…";
   statusEl.className = "status";
   try {
-    const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/dispatches`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${TOKEN}`,
-        "Accept": "application/vnd.github+json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        event_type: "client-feedback",
-        client_payload: { post_id: postId, result: result, comment: comment }
-      })
+    const row = csvRows.find(r => r.item === postId);
+    if (row) { row.feedback = result; row["feedback-comment"] = comment; }
+    const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${CSV_PATH}`, {
+      method: "PUT",
+      headers: { "Authorization": `Bearer ${TOKEN}`, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
+      body: JSON.stringify({ message: `feedback: ${postId} -> ${result || "cleared"}`, content: toBase64(serializeCSV(csvRows, csvHeaders)), sha: csvSha })
     });
-    if (res.status === 204) {
+    if (res.status === 200 || res.status === 201) {
+      const json = await res.json();
+      csvSha = json.content.sha;
       if (commentOnly) {
         const activeResult = allBtns.find(b => b.classList.contains("active"))?.dataset.result;
         allBtns.forEach(b => { b.style.opacity = activeResult && b.dataset.result !== activeResult ? "0.35" : ""; });
@@ -266,6 +280,7 @@ async function fetchCSV() {
       cache: "no-store"
     });
     const json = await res.json();
+    csvSha = json.sha;
     const bytes = Uint8Array.from(atob(json.content.replace(/\n/g, "")), c => c.charCodeAt(0));
     return new TextDecoder("utf-8").decode(bytes);
   }
@@ -275,7 +290,9 @@ async function fetchCSV() {
 
 async function load() {
   const text = await fetchCSV();
-  const rows = parseCSV(text);
+  csvHeaders = text.trim().split("\n")[0].replace(/"/g, "").split(",");
+  csvRows    = parseCSV(text);
+  const rows = csvRows;
 
   const qMatch = CSV_URL.match(/TABLE-(\d{4})(Q\d)\.csv/i);
   const qLabel = qMatch ? `${qMatch[2]} ${qMatch[1]}` : "";
