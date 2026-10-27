@@ -2,6 +2,27 @@ ASSET LOG
 
 ####### <!-- ANCHOR MARKER - ADD ALL NEW ASSET ENTRIES DIRECTLY BELOW THIS LINE -->
 
+## ASSET:redwolf 2026-10-27 16:20 -> Week 44 media generated (post-013, 014, 015, 017, 018)
+
+**Media (COULD/media/2026Q3/, 1080x1350; media URLs updated in MAY/TABLE-2026Q3.csv):**
+- post-013 https://raw.githubusercontent.com/redwolfnz/md-redwolf/main/COULD/media/2026Q3/post-013-iqp-compliance.png — compliance schedule → IQP inspection (latch/lock/release incl. alarm activation and power failure) → fix → Form 12A → BWOF; year-end prompt.
+- post-014 https://raw.githubusercontent.com/redwolfnz/md-redwolf/main/COULD/media/2026Q3/post-014-govt-policy.png — Minister Mitchell at ASIS NZ chapter meeting (October) + short ASIS NZ quote, PSR areas and who it applies to.
+- post-015 https://raw.githubusercontent.com/redwolfnz/md-redwolf/main/COULD/media/2026Q3/post-015-active-assailant.png — "<50%" stat + four factors from the ASIS/Everbridge study (CAN/TREE-ASIS 2026-10-22).
+- post-017 https://raw.githubusercontent.com/redwolfnz/md-redwolf/main/COULD/media/2026Q3/post-017-govt-case-study.pdf (+ post-017-govt-slide-1..5.png) — site, challenge, design, install, outcome.
+- post-018 https://raw.githubusercontent.com/redwolfnz/md-redwolf/main/COULD/media/2026Q3/post-018-awareness-final-week.gif — 6.5 s loop: "Your alarm goes off at 2am on a Sunday" → three checks tick on → CTA.
+- post-016 jpg — placeholder file added (https://raw.githubusercontent.com/redwolfnz/md-redwolf/main/COULD/media/2026Q3/post-016-PLACEHOLDER.md); needs a real photo of Shamal Kumar with consent.
+
+**Kept to confirmed facts:**
+- post-014: the NZSA cache shows the Minister's ASIS NZ appearance was *announced* for October; nothing on what he said. Graphic does not claim policy changes or that the PSR is evolving.
+
+**Verify before publishing:**
+- post-013: "Red Wolf holds IQP qualifications" — confirm IQP registration with each council. Official term is "independent qualified person".
+- post-014 copy: "just briefed security leaders on policy changes" / "PSR obligations are evolving" — unconfirmed.
+- post-017: real government client — confirm facts (Integriti, NOC monitoring, resilient connectivity, "certified to the performance requirements") and client approval. No client named.
+- post-018: graphic and copy offer a free 30-minute system review call in November — confirm the offer is real.
+
+**Note:** old week 41 files post-013-access-control.png … post-018-did-you-know.png are still in COULD/media/2026Q3/ unreferenced.
+
 ## ASSET:redwolf 2026-10-27 -> Repo housekeeping: folder renames, README.TXT→README.md, step restructure
 
 **Folder renames (git mv — all references updated):**
