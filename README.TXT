@@ -90,6 +90,59 @@ STEP 2 — GENERATE
     tags: @Red Wolf always; partners only if directly relevant
   Set all new posts to BLOCKED status until media is ready
 
+STEP B — OPEN WEEKLY PR
+  After STEP 2, open a pull request so the client can review posts and
+  track progress through STEPS 3–5. All subsequent commits (media, status
+  changes, feedback) go onto the same branch until merge.
+
+  1. Create a branch:
+       git checkout -b content/w<NN>-batch
+
+  2. Stage and commit the generated files:
+       git add COULD/TABLE-2026Q3.csv MIGHT/LOG-2026Q3.log
+       git commit -m "content(w<NN>): generate week <NN> batch — post-0XX to post-0XX"
+
+  3. Push the branch:
+       git push -u origin content/w<NN>-batch
+
+  4. Open the PR using the template below.
+     The <!-- TREE-START --> / <!-- TREE-END --> markers tell the
+     update-tree-mermaid GitHub Action where to refresh the Mermaid
+     diagram automatically whenever CAN/TREE-<quarter>.json changes on main.
+
+  PR TEMPLATE
+  ───────────
+  ## Week <NN> — 6 posts, all BLOCKED pending media
+
+  | Post | Pillar | Subtype | Score | Media |
+  |------|--------|---------|-------|-------|
+  | post-0XX | <PILLAR> | <Type> / <Subtype> | <score> | <ext> |
+  ... (one row per post)
+
+  ## Research signals (STEP 1a)
+
+  - **<CONNECTION>** (<date>) — <finding> → post-0XX
+  ... (one bullet per signal that drove a selection)
+  - **BOSCH** — page inactive (Keenfinity Group since Jul 2026); not tagged
+  - **JACQUES** — last post <date>; not tagged   (if still inactive)
+
+  ## Next steps
+
+  - [ ] Generate media for post-0XX to post-0XX (STEP 3)
+  - [ ] Client review via index site (STEP 4)
+  - [ ] Update status from BLOCKED → READY when media is approved
+
+  ---
+
+  ## Content Strategy Tree
+
+  > Auto-updated from `CAN/TREE-<quarter>.json` — suggest changes by commenting below.
+
+  <!-- TREE-START -->
+  <paste current output of: python3 .github/scripts/gen_tree_mermaid.py>
+  <!-- TREE-END -->
+  ───────────
+
 STEP 3 — MEDIA
   Generate or source media, save to COULD/media/<quarter>/,
   log each asset in MAY/ASSET-2026Q3.md.
