@@ -95,14 +95,23 @@ Open `MAY/TABLE-2026Q3.csv` and add 6 new rows for the next week number — one 
 - tags: @Red Wolf always; partners only if directly relevant
 - set all new posts to `BLOCKED` status until media is ready
 
-#### Step 2a — Open Weekly PR
+#### Step 2a — Update key files
 
-Commit directly to main and open a PR so the client can review posts and suggest changes through steps 2b–2d.
+Before committing, update each file that changed this week:
+
+- **`CAN/TREE-2026Q3.json`** — add any new subtypes selected this batch (if the subtype didn't exist in the tree yet)
+- **`COULD/LOG-2026Q3.log`** — append the week batch summary entry (signals, media spread)
+- **`MAY/TABLE-2026Q3.csv`** — already updated in Step 2; verify all 6 rows are complete and correct
+- **`MIGHT/ASSET-2026Q3.md`** — append entries for any new media assets created or decisions made
+
+#### Step 2b — Open Weekly PR
+
+Commit directly to main and open a PR so the client can review posts and suggest changes through steps 2c–2e.
 
 **Stage and commit:**
 
 ```bash
-git add MAY/TABLE-2026Q3.csv COULD/LOG-2026Q3.log
+git add CAN/TREE-2026Q3.json MAY/TABLE-2026Q3.csv COULD/LOG-2026Q3.log MIGHT/ASSET-2026Q3.md
 git commit -m "content(w<NN>): generate week <NN> batch — post-0XX to post-0XX"
 git push
 ```
@@ -115,9 +124,19 @@ git push
 ```markdown
 ## Week <NN> — 6 posts, all BLOCKED pending media
 
+## Posts (`MAY/TABLE-2026Q3.csv`)
+
 | Post | Pillar | Subtype | Score | Media |
 |------|--------|---------|-------|-------|
 | post-0XX | <PILLAR> | <Type> / <Subtype> | <score> | <ext> |
+
+## Activity log (`COULD/LOG-2026Q3.log`)
+
+<paste week <NN> log entry>
+
+## Assets (`MIGHT/ASSET-2026Q3.md`)
+
+<paste any new asset entries, or "no new assets this week">
 
 ## Research signals (Step 1a)
 
@@ -127,15 +146,15 @@ git push
 
 ## Next steps
 
-- [ ] Generate media for post-0XX to post-0XX (Step 2b)
-- [ ] Client review via index site (Step 2c)
+- [ ] Generate media for post-0XX to post-0XX (Step 2c)
+- [ ] Client review via index site (Step 2d)
 - [ ] Update status from BLOCKED → READY when media is approved
 
 ---
 
-## Content Strategy Tree
+## Content Strategy Tree (`CAN/TREE-2026Q3.json`)
 
-> Auto-updated from `CAN/TREE-<quarter>.json` — suggest changes by commenting below.
+> Auto-updated whenever the tree JSON changes on main — suggest changes by commenting below.
 
 <!-- TREE-START -->
 <paste current output of: python3 .github/scripts/gen_tree_mermaid.py>
@@ -144,15 +163,15 @@ git push
 
 </details>
 
-#### Step 2b — Media
+#### Step 2c — Media
 
 Generate or source media, save to `COULD/media/<quarter>/`, log each asset in `MIGHT/ASSET-2026Q3.md`.
 
-#### Step 2c — Review
+#### Step 2d — Review
 
 Client reviews posts via the index site (GitHub Pages). Feedback is written back to the CSV via GitHub Actions.
 
-#### Step 2d — Publish
+#### Step 2e — Publish
 
 Download media locally (LinkedIn does not accept URLs). Copy title, description, tags, and hashtags from the CSV. Upload to LinkedIn and log outcome in `COULD/LOG-2026Q3.log`.
 
