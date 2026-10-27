@@ -38,6 +38,20 @@ def gen_mermaid(path: str) -> str:
                 sub_id = f'{type_id}_{safe_id(s["name"])}'
                 lines.append(f'  {type_id} --> {sub_id}("{s["name"]}")')
 
+    conns = data.get("connections", {})
+    if conns:
+        lines.append('  ROOT --> CONNECTIONS["Connections"]')
+        group_labels = {"own": "Own", "associations": "Associations", "partners": "Partners"}
+        for group, label in group_labels.items():
+            members = conns.get(group, {})
+            if not members:
+                continue
+            grp_id = f'CONN_{group}'
+            lines.append(f'  CONNECTIONS --> {grp_id}["{label}"]')
+            for name in members:
+                mem_id = f'{grp_id}_{safe_id(name)}'
+                lines.append(f'  {grp_id} --> {mem_id}("{name}")')
+
     lines.append("```")
     return "\n".join(lines)
 
