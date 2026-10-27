@@ -34,17 +34,25 @@ SLUG_ORDER = [
 ]
 
 
-def pipe_steps() -> str:
-    """Return a compact yaml block — steps id+name only — from the live PIPE file."""
+def pipe_mermaid() -> str:
+    """Return a graph LR Mermaid diagram of the pipeline steps from the live PIPE file."""
     with open(PIPE, encoding="utf-8") as f:
         data = yaml.safe_load(f)
-    compact = []
+    meta = data.get("meta", {})
+    root_label = f"{meta.get('name', PIPE)} · {meta.get('quarter', QUARTER)}"
+    lines = [
+        "```mermaid",
+        "graph LR",
+        f'  ROOT(["{root_label}"])',
+    ]
     for step in data.get("steps", []):
-        s = {"id": step["id"], "name": step["name"]}
-        if "substeps" in step:
-            s["substeps"] = [{"id": sub["id"], "name": sub["name"]} for sub in step["substeps"]]
-        compact.append(s)
-    return yaml.dump({"steps": compact}, default_flow_style=False, sort_keys=False).strip()
+        sid = step["id"].replace("-", "_").upper()
+        lines.append(f'  ROOT --> {sid}["{step["id"]} · {step["name"]}"]')
+        for sub in step.get("substeps", []):
+            subid = f'{sid}_{sub["id"].replace("-", "_").upper()}'
+            lines.append(f'  {sid} --> {subid}("{sub["id"]} · {sub["name"]}")')
+    lines.append("```")
+    return "\n".join(lines)
 
 
 def mermaid_block() -> str:
@@ -134,9 +142,7 @@ def gen_pr_body(week: int) -> str:
 
 ## Pipeline (`PIPE-{QUARTER}.yml`)
 
-```yaml
-{pipe_steps()}
-```
+{pipe_mermaid()}
 
 ## Content Strategy Tree (`CAN/TREE-{QUARTER}.json`)
 
