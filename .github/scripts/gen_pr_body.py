@@ -17,12 +17,14 @@ import json
 import re
 import subprocess
 import sys
+import yaml
 from datetime import date, timedelta
 from pathlib import Path
 
 QUARTER = "2026Q3"
 TABLE   = f"COULD/TABLE-{QUARTER}.csv"
 ASSET   = f"MIGHT/ASSET-{QUARTER}.md"
+PIPE    = f"PIPE-{QUARTER}.yml"
 
 FETCH_ANCHOR = "####### <!-- ANCHOR MARKER - ADD ALL NEW ENTRIES DIRECTLY BELOW THIS LINE -->"
 
@@ -30,6 +32,22 @@ SLUG_ORDER = [
     "REDWOLF", "NZSA", "ASIS", "NZPOLICE",
     "JOHNSON", "GALLAGHER", "INNERRANGE", "BOSCH", "ICT", "JACQUES",
 ]
+
+
+def pipe_mermaid() -> str:
+    with open(PIPE, encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+    meta = data.get("meta", {})
+    root_label = f"{meta.get('name', PIPE)} · {meta.get('quarter', QUARTER)}"
+    lines = ["```mermaid", "graph LR", f'  ROOT(["{root_label}"])']
+    for step in data.get("steps", []):
+        sid = step["id"].replace("-", "_").upper()
+        lines.append(f'  ROOT --> {sid}["{step["id"]} · {step["name"]}"]')
+        for sub in step.get("substeps", []):
+            subid = f'{sid}_{sub["id"].replace("-", "_").upper()}'
+            lines.append(f'  {sid} --> {subid}("{sub["id"]} · {sub["name"]}")')
+    lines.append("```")
+    return "\n".join(lines)
 
 
 def mermaid_block() -> str:
@@ -115,6 +133,10 @@ def asset_entry() -> str:
 
 def gen_pr_body(week: int) -> str:
     return f"""\
+## Pipeline (`PIPE-{QUARTER}.yml`)
+
+{pipe_mermaid()}
+
 ## Content Strategy Tree (`CAN/TREE-{QUARTER}.json`)
 
 > Auto-updated whenever the tree JSON changes on main — suggest changes by commenting below.
