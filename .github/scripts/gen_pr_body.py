@@ -17,12 +17,14 @@ import json
 import re
 import subprocess
 import sys
+import yaml
 from datetime import date, timedelta
 from pathlib import Path
 
 QUARTER = "2026Q3"
 TABLE   = f"COULD/TABLE-{QUARTER}.csv"
 ASSET   = f"MIGHT/ASSET-{QUARTER}.md"
+PIPE    = f"PIPE-{QUARTER}.yml"
 
 FETCH_ANCHOR = "####### <!-- ANCHOR MARKER - ADD ALL NEW ENTRIES DIRECTLY BELOW THIS LINE -->"
 
@@ -30,6 +32,19 @@ SLUG_ORDER = [
     "REDWOLF", "NZSA", "ASIS", "NZPOLICE",
     "JOHNSON", "GALLAGHER", "INNERRANGE", "BOSCH", "ICT", "JACQUES",
 ]
+
+
+def pipe_steps() -> str:
+    """Return a compact yaml block — steps id+name only — from the live PIPE file."""
+    with open(PIPE, encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+    compact = []
+    for step in data.get("steps", []):
+        s = {"id": step["id"], "name": step["name"]}
+        if "substeps" in step:
+            s["substeps"] = [{"id": sub["id"], "name": sub["name"]} for sub in step["substeps"]]
+        compact.append(s)
+    return yaml.dump({"steps": compact}, default_flow_style=False, sort_keys=False).strip()
 
 
 def mermaid_block() -> str:
@@ -116,6 +131,12 @@ def asset_entry() -> str:
 def gen_pr_body(week: int) -> str:
     return f"""\
 ## Week {week:02d} — 6 posts, all BLOCKED pending media
+
+## Pipeline (`PIPE-{QUARTER}.yml`)
+
+```yaml
+{pipe_steps()}
+```
 
 ## Content Strategy Tree (`CAN/TREE-{QUARTER}.json`)
 
