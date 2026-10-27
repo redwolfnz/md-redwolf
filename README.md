@@ -111,7 +111,7 @@ Commit directly to main and open a PR so the client can review posts and suggest
 **Stage and commit:**
 
 ```bash
-git add CAN/TREE-2026Q3.json MAY/TABLE-2026Q3.csv COULD/LOG-2026Q3.log MIGHT/ASSET-2026Q3.md
+git add CAN/TREE-2026Q3.json COULD/LOG-2026Q3.log MAY/TABLE-2026Q3.csv MIGHT/ASSET-2026Q3.md
 git commit -m "content(w<NN>): generate week <NN> batch — post-0XX to post-0XX"
 git push
 ```
@@ -124,15 +124,23 @@ git push
 ```markdown
 ## Week <NN> — 6 posts, all BLOCKED pending media
 
+## Content Strategy Tree (`CAN/TREE-2026Q3.json`)
+
+> Auto-updated whenever the tree JSON changes on main — suggest changes by commenting below.
+
+<!-- TREE-START -->
+<paste current output of: python3 .github/scripts/gen_tree_mermaid.py>
+<!-- TREE-END -->
+
+## Activity log (`COULD/LOG-2026Q3.log`)
+
+<paste week <NN> log entry>
+
 ## Posts (`MAY/TABLE-2026Q3.csv`)
 
 | Post | Pillar | Subtype | Score | Media |
 |------|--------|---------|-------|-------|
 | post-0XX | <PILLAR> | <Type> / <Subtype> | <score> | <ext> |
-
-## Activity log (`COULD/LOG-2026Q3.log`)
-
-<paste week <NN> log entry>
 
 ## Assets (`MIGHT/ASSET-2026Q3.md`)
 
@@ -148,16 +156,6 @@ git push
 
 - [ ] Generate media for post-0XX to post-0XX (Step 2c)
 - [ ] Update status from BLOCKED → READY when media is ready
-
----
-
-## Content Strategy Tree (`CAN/TREE-2026Q3.json`)
-
-> Auto-updated whenever the tree JSON changes on main — suggest changes by commenting below.
-
-<!-- TREE-START -->
-<paste current output of: python3 .github/scripts/gen_tree_mermaid.py>
-<!-- TREE-END -->
 ```
 
 </details>
