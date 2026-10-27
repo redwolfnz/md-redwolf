@@ -2,6 +2,21 @@ ASSET LOG
 
 ####### <!-- ANCHOR MARKER - ADD ALL NEW ASSET ENTRIES DIRECTLY BELOW THIS LINE -->
 
+## ASSET:redwolf 2026-10-27 -> Folder swap: COULD↔MAY (commit c5b2046)
+
+**New semantics:**
+```
+COULD: assets and values   # what the content could reference  (was MAY)
+MAY:   posts and media     # what the content should contain   (was COULD)
+```
+
+**Files moved (57 total):**
+- `MAY/TABLE-2026Q3.csv` → `COULD/TABLE-2026Q3.csv`
+- `COULD/<SLUG>-2026Q3.log` × 11 → `MAY/<SLUG>-2026Q3.log`
+- `COULD/media/2026Q3/` → `MAY/media/2026Q3/` (45 files)
+
+**References updated:** `PIPE-2026Q3.yml`, `gen_pr_body.py`, `fetch_linkedin_cache.py`, `fetch-linkedin.yml`, `update-feedback.yml`, `SKILL.md`, `index.html`.
+
 ## ASSET:redwolf 2026-10-27 -> PR body: Connection activity section; LOG-2026Q3.log retired from pipeline
 
 **Connection activity section added to gen_pr_body.py:**
