@@ -2,6 +2,35 @@ ASSET LOG
 
 ####### <!-- ANCHOR MARKER - ADD ALL NEW ASSET ENTRIES DIRECTLY BELOW THIS LINE -->
 
+## ASSET:redwolf 2026-10-27 -> Week 44 batch generated; PR #1 opened with auto-updating Mermaid content tree
+
+**Week 44 content batch — post-013 to post-018 (all BLOCKED pending media):**
+
+| Post | Pillar | Type | Subtype | Score | Media |
+|------|--------|------|---------|-------|-------|
+| post-013 | SERVICES | Consulting & Design | IQP Inspections | 7 | png |
+| post-014 | INDUSTRY | Regulation & Compliance | Government Policy | 8 | png |
+| post-015 | AUTHORITY | Thought Leadership | Expert Opinion | 8 | png |
+| post-016 | PEOPLE | Team Spotlight | Staff Profiles | 7 | jpg |
+| post-017 | TRUST | Case Studies | Govt & Critical Infrastructure | 9 | pdf |
+| post-018 | ENGAGEMENT | Campaigns & Seasonal | Security Awareness Month | 8 | gif |
+
+**Step 1a signals that drove selection:**
+- NZSA (Oct 15): Minister Mitchell at ASIS NZ event on PSR/legislative changes → post-014
+- ASIS (Oct 22): <50% of orgs confident in active assailant response → post-015
+- REDWOLF/NZSA: Shamal Kumar NZSA finalist; awards spotlight concluded Oct 19 → post-016
+- INNERRANGE (Oct 21): SAGE 2026 govt/defence expo Nov 19 → post-017
+- Seasonal: final week of Security Awareness Month → post-018; end-of-year IQP compliance window → post-013
+- BOSCH: confirmed dead (Keenfinity Group since Jul 2026) — not tagged
+- JACQUES: last post Jun 2026 — not tagged
+
+**PR #1 opened:** https://github.com/redwolfnz/md-redwolf/pull/1 (branch `content/w44-batch`)
+
+**GitHub Action added — `.github/workflows/update-tree-mermaid.yml`:**
+Triggers on push to main when `CAN/TREE-2026Q3.json` changes. Regenerates a `graph LR` Mermaid diagram from the JSON using `.github/scripts/gen_tree_mermaid.py` and replaces the `<!-- TREE-START -->` / `<!-- TREE-END -->` section in any open PR descriptions via `.github/scripts/replace_tree_section.py`. The PR description carries the content tree as a live visual reference for client review; no `.md` file is committed to `CAN/`.
+
+**Verify before publishing:** all 6 posts BLOCKED — media briefs only, no files generated yet.
+
 ## ASSET:redwolf 2026-10-23 23:15 -> Week 43 v4 media: post-007 gif, post-008 png, post-011 pdf (commit 514bbd7)
 
 **Generated (1080x1080, per briefs):**
