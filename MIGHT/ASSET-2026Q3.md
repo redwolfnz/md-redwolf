@@ -2,6 +2,19 @@ ASSET LOG
 
 ####### <!-- ANCHOR MARKER - ADD ALL NEW ASSET ENTRIES DIRECTLY BELOW THIS LINE -->
 
+## ASSET:redwolf 2026-10-28 -> Pipeline restructure: step-2 is now generate-content (automated)
+
+**PIPE-2026Q3.yml updated** — two-step structure:
+- `step-1: fetch-linkedin` (1a only) — Mac mini / py-redwolf, cron Monday
+- `step-2: generate-content` (1b + 1c + 2 combined) — Claude API, cron Tuesday
+
+**New files created:**
+- `.github/workflows/generate-content.yml` — cron Tuesday 8am NZST; creates `content/w<NN>-batch` branch, runs `gen_posts.py`, commits TABLE CSV, opens PR via `gh pr create`
+- `.github/scripts/gen_posts.py` — reads TREE JSON + MAY logs, calls `claude-opus-4-8`, validates 6-post JSON response (no `--`, all 6 pillars, no repeated subtypes), appends rows to TABLE CSV with `csv.QUOTE_ALL` serialization
+- `.claude/skills/generate-post/SKILL.md` — system prompt for the generation call; covers angle selection, media-type decision, brand voice rules, NZ framing, and exact JSON output format
+
+**Reasoning for merge:** Steps 1b (select-topic), 1c (choose-artifact), and 2 (write) are pure Claude reasoning. Only 1a requires the Mac mini (residential IP + Playwright). Combining them cuts latency and eliminates a hand-off artifact.
+
 ## ASSET:redwolf 2026-10-27 -> Feedback: direct CSV write via Contents API PUT (~1–2s)
 
 Replaced `repository_dispatch` → `update-feedback.yml` (~15–20s) with a direct PUT to the GitHub Contents API. SHA tracked globally (`csvSha`) and updated after each write. `csvRows` and `csvHeaders` held in memory for serialization. `serializeCSV()` replicates Python `csv.QUOTE_ALL`. `update-feedback.yml` workflow left in place but no longer active — can retire next quarter rollover.

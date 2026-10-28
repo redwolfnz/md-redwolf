@@ -34,7 +34,11 @@ folders:
 steps:
 
   - id: step-1
-    name: Research
+    name: fetch-linkedin
+    # Automated — GitHub Action runs every Monday, commits log entries to MAY/.
+    # py-redwolf on Mac mini required: residential IP + saved Playwright session.
+    trigger: cron Monday 9am NZST
+    action: .github/workflows/fetch-linkedin.yml
     substeps:
 
       - id: 1a
@@ -42,78 +46,54 @@ steps:
         skill: .claude/skills/fetch-linkedin/
         reads:
           - CAN/TREE-2026Q3.json
-          - COULD/*-2026Q3.log
-        # Reads connections{} from TREE JSON then each TREE-<SLUG> cache file.
-        # Cache built by: GitHub Action → Cloudflare Tunnel
-        #   → py-redwolf/listener.py on mac mini
-        #   → browse_linkedin.py (Playwright, saved session) → JSON per slug
-        #   → Action commits CAN/TREE-<SLUG>-2026Q3.json to this repo
+        writes:
+          - MAY/*-2026Q3.log
+        # Calls py-redwolf/listener.py (Mac mini) via Cloudflare Tunnel.
+        # Playwright + saved LinkedIn session scrapes each connection page.
+        # One JSON entry per slug appended below the anchor in MAY/<SLUG>-2026Q3.log.
         # Do not tag a connection whose recentPosts[] is empty or stale.
-        # Fallback: run a web search for the slug if cache is missing or stale.
-
-      - id: 1b
-        name: select-topic
-        reads:
-          - CAN/TREE-2026Q3.json
-        # For each of the 6 pillars select a type and subtype relevant to 1a findings.
-        # Recent partner activity, industry news, or campaign timing should inform the angle.
-        # Apply scoring guide to assign a score to each post.
-
-      - id: 1c
-        name: choose-artifact
-        # Decide media-type for each post:
-        media_types:
-          png: branded graphic, infographic, diagram, card, timeline
-          jpg: photo (staff, site, event)
-          gif: short looping animation (diagram, flow, before/after)
-          pdf: multi-slide carousel / document
-          mp4: video
 
   - id: step-2
-    name: Generate
-    # Open COULD/TABLE-2026Q3.csv and add 6 new rows — one per pillar.
-    # topic / type / subtopic / score / media-type already decided from Step 1.
-    # Write title, description, tags, hashtags.
-    # tags: @Red Wolf always; partners only if directly relevant.
-    # Set all new posts to BLOCKED.
-    rules:
-      - Do not use double hyphens (--) anywhere in generated text — use an em dash (—) or reword instead
+    name: generate-content
+    # Automated — GitHub Action runs every Tuesday, calls Claude API.
+    # Combines 1b (select-topic), 1c (choose-artifact), and 2 (write posts)
+    # into one Claude API call — pure reasoning, no LinkedIn scraping needed.
+    trigger: cron Tuesday 8am NZST
+    action: .github/workflows/generate-content.yml
+    script: .github/scripts/gen_posts.py
+    model: claude-opus-4-8
+    skill: .claude/skills/generate-post/SKILL.md
+    reads:
+      - CAN/TREE-2026Q3.json
+      - MAY/*-2026Q3.log
+      - COULD/TABLE-2026Q3.csv       # for used-subtypes dedup
     writes:
       - COULD/TABLE-2026Q3.csv
+    rules:
+      - Do not use double hyphens (--) anywhere in generated text — use an em dash (—) or reword instead
+      - One post per pillar per week — exactly 6 posts per batch
+      - Do not repeat the same subtype within the same quarter — check TABLE CSV before selecting
+      - Tag a partner only if their recent posts directly informed the angle — never force a tag
     substeps:
 
       - id: 2a
-        name: update-key-files
-        # Update each file that changed this week before committing.
-        files:
-          - path: CAN/TREE-2026Q3.json
-            action: add any new subtypes selected this batch
-          - path: COULD/TABLE-2026Q3.csv
-            action: verify all 6 rows are complete and correct
-          - path: MIGHT/ASSET-2026Q3.md
-            action: append entries for new media assets or decisions
+        name: select-angle
+        # For each pillar, read MAY log entries from the last 7 days.
+        # Select type + subtype not already used this quarter.
+        # Angle must be grounded in connection activity, industry news, or campaign timing.
+        # Also decide media-type: png / jpg / gif / pdf / mp4.
 
       - id: 2b
-        name: open-weekly-pr
-        # TREE-START / TREE-END markers trigger the update-tree-mermaid Action.
-        # PR sections order: CAN tree → COULD log → MAY posts → MIGHT assets.
-        commit: "content(w<NN>): generate week <NN> batch — post-0XX to post-0XX"
-        git_add:
-          - CAN/TREE-2026Q3.json
-          - COULD/TABLE-2026Q3.csv
-          - MIGHT/ASSET-2026Q3.md
-        pr_body_script: .github/scripts/gen_pr_body.py
-        # Usage:
-        #   python3 .github/scripts/gen_pr_body.py <NN> > /tmp/pr_body.md
-        #   gh pr create --title "content(w<NN>): ..." --body-file /tmp/pr_body.md
+        name: write-posts
+        # Write title, description, hashtags, tags, score for all 6 posts.
+        # Claude returns a JSON array — gen_posts.py parses and appends to TABLE CSV.
 
       - id: 2c
-        name: media
-        # Generate or source media. Save to MAY/media/<quarter>/.
-        # Log each asset in MIGHT/ASSET-2026Q3.md.
-        writes:
-          - MAY/media/2026Q3/
-          - MIGHT/ASSET-2026Q3.md
+        name: open-pr
+        # Workflow commits TABLE CSV on a branch and opens a PR.
+        commit: "content(w<NN>): generate week <NN> batch — post-<XXX> to post-<XXX>"
+        branch: content/w<NN>-batch
+        pr_body_script: .github/scripts/gen_pr_body.py
 
 # ── RULES ───────────────────────────────────────────────────────────────────
 rules:

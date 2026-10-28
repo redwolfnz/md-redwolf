@@ -1,0 +1,84 @@
+name: Generate weekly content
+
+on:
+  schedule:
+    - cron: '0 20 * * 1'   # Monday 8pm UTC = Tuesday 8am NZST (UTC+12)
+  workflow_dispatch:
+    inputs:
+      week:
+        description: 'ISO week number (leave blank to use current week)'
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install anthropic
+
+      - name: Compute week number
+        id: week
+        run: |
+          if [ -n "${{ github.event.inputs.week }}" ]; then
+            echo "num=${{ github.event.inputs.week }}" >> $GITHUB_OUTPUT
+          else
+            echo "num=$(python3 -c 'from datetime import date; print(date.today().isocalendar()[1])')" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create content branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b content/w${{ steps.week.outputs.num }}-batch
+
+      - name: Generate posts
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CONTENT_WEEK: ${{ steps.week.outputs.num }}
+        run: python3 .github/scripts/gen_posts.py
+
+      - name: Commit generated posts
+        run: |
+          WEEK=${{ steps.week.outputs.num }}
+          FIRST=$(python3 -c "
+          import csv
+          rows = list(csv.DictReader(open('COULD/TABLE-2026Q3.csv')))
+          week_rows = [r for r in rows if r['week'] == '$WEEK']
+          if week_rows:
+              items = [r['item'] for r in week_rows]
+              print(f'{items[0]} to {items[-1]}')
+          else:
+              print('no posts')
+          ")
+          git add COULD/TABLE-2026Q3.csv
+          git commit -m "content(w${WEEK}): generate week ${WEEK} batch — ${FIRST}"
+          git push origin content/w${WEEK}-batch
+
+      - name: Generate PR body
+        run: |
+          WEEK=${{ steps.week.outputs.num }}
+          python3 .github/scripts/gen_pr_body.py $WEEK > /tmp/pr_body.md
+
+      - name: Open PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          WEEK=${{ steps.week.outputs.num }}
+          gh pr create \
+            --title "content(w${WEEK}): week ${WEEK} batch" \
+            --body-file /tmp/pr_body.md \
+            --base main \
+            --head content/w${WEEK}-batch
