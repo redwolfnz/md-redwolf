@@ -55,13 +55,14 @@ steps:
 
   - id: step-2
     name: generate-content
-    # Automated — GitHub Action runs every Tuesday, calls Claude API.
-    # Combines 1b (select-topic), 1c (choose-artifact), and 2 (write posts)
-    # into one Claude API call — pure reasoning, no LinkedIn scraping needed.
+    # Automated — GitHub Action runs every Tuesday.
+    # Action builds payload from repo files, calls Mac mini via Cloudflare Tunnel.
+    # Mac mini runs Claude API call (key stored locally) and returns posts JSON.
+    # Action appends to CSV, commits, opens PR. No Anthropic key in GitHub secrets.
     trigger: cron Tuesday 8am NZST
     action: .github/workflows/generate-content.yml
     script: .github/scripts/gen_posts.py
-    model: claude-opus-4-8
+    model: claude-opus-4-8          # invoked by Mac mini listener, not the Action runner
     skill: .claude/skills/generate-post/SKILL.md
     reads:
       - CAN/TREE-2026Q3.json

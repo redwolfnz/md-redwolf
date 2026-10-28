@@ -2,27 +2,33 @@
 """
 Step 2: Generate weekly content batch.
 
-Reads TREE JSON + MAY connection logs, calls the Claude API with the
-generate-post skill as the system prompt, then appends 6 post rows
-(one per pillar) to COULD/TABLE-2026Q3.csv.
+Builds a payload from local repo files (TREE JSON + MAY logs + TABLE CSV),
+POSTs it to the Mac mini listener via Cloudflare Tunnel, receives a JSON
+array of 6 generated posts, validates them, then appends to TABLE CSV.
 
-Environment variables:
-  ANTHROPIC_API_KEY  — required
-  CONTENT_WEEK       — optional ISO week override (default: current week)
+The Mac mini listener handles the Claude API call — no Anthropic key needed
+in GitHub secrets.
+
+Environment variables (supplied by the GitHub Action):
+  GENERATE_CONTENT_URL    — Cloudflare Tunnel URL for the /generate-content endpoint
+  CF_ACCESS_CLIENT_ID     — Cloudflare Access service token ID
+  CF_ACCESS_CLIENT_SECRET — Cloudflare Access service token secret
+  LISTENER_SHARED_SECRET  — shared secret verified by listener.py
+  CONTENT_WEEK            — optional ISO week override (default: current week)
 """
 
-import anthropic
 import csv
+import io
 import json
 import os
 import re
+import requests
 from datetime import date, timedelta
 from pathlib import Path
 
 QUARTER      = "2026Q3"
 TABLE_PATH   = f"COULD/TABLE-{QUARTER}.csv"
 TREE_PATH    = f"CAN/TREE-{QUARTER}.json"
-SKILL_PATH   = ".claude/skills/generate-post/SKILL.md"
 LOG_DIR      = Path("MAY")
 FETCH_ANCHOR = "####### <!-- ANCHOR MARKER - ADD ALL NEW ENTRIES DIRECTLY BELOW THIS LINE -->"
 
@@ -33,23 +39,12 @@ SLUG_ORDER = [
 
 PILLARS = ["SERVICES", "INDUSTRY", "AUTHORITY", "PEOPLE", "TRUST", "ENGAGEMENT"]
 
-MODEL   = "claude-opus-4-8"
-
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 
 def week_num() -> int:
     env = os.environ.get("CONTENT_WEEK", "")
     return int(env) if env else date.today().isocalendar()[1]
-
-
-def load_skill() -> str:
-    text = Path(SKILL_PATH).read_text(encoding="utf-8")
-    # Strip YAML frontmatter if present
-    if text.startswith("---"):
-        end = text.index("---", 3) + 3
-        return text[end:].lstrip()
-    return text
 
 
 def parse_latest_log_entry(slug: str) -> dict | None:
@@ -115,24 +110,41 @@ def next_item_num(rows: list[dict]) -> int:
     return (max(nums) if nums else 0) + 1
 
 
-def build_user_message(week: int, rows: list[dict], tree: dict) -> str:
+def build_payload(week: int, rows: list[dict], tree: dict) -> dict:
     today = date.today()
     window_start = today - timedelta(days=7)
-    connections = load_connections(window_start, today)
-    return json.dumps(
-        {
-            "quarter": QUARTER,
-            "week": week,
-            "today": str(today),
-            "window": f"{window_start} to {today}",
-            "nextItemStart": next_item_num(rows),
-            "usedSubtypes": used_subtypes(rows),
-            "tree": tree,
-            "connections": connections,
-        },
-        indent=2,
-        ensure_ascii=False,
-    )
+    return {
+        "quarter": QUARTER,
+        "week": week,
+        "today": str(today),
+        "window": f"{window_start} to {today}",
+        "nextItemStart": next_item_num(rows),
+        "usedSubtypes": used_subtypes(rows),
+        "tree": tree,
+        "connections": load_connections(window_start, today),
+    }
+
+
+# ── Mac mini call ─────────────────────────────────────────────────────────────
+
+def call_mac_mini(payload: dict) -> list[dict]:
+    url     = os.environ["GENERATE_CONTENT_URL"].rstrip("/") + "/generate-content"
+    headers = {
+        "CF-Access-Client-Id":     os.environ["CF_ACCESS_CLIENT_ID"],
+        "CF-Access-Client-Secret": os.environ["CF_ACCESS_CLIENT_SECRET"],
+        "X-Listener-Secret":       os.environ["LISTENER_SHARED_SECRET"],
+        "Content-Type":            "application/json",
+    }
+    print(f"Calling Mac mini at {url} …")
+    resp = requests.post(url, headers=headers, json=payload, timeout=180)
+    resp.raise_for_status()
+    data = resp.json()
+    # Listener may return {"posts": [...]} or a bare array
+    if isinstance(data, list):
+        return data
+    if isinstance(data, dict) and "posts" in data:
+        return data["posts"]
+    raise ValueError(f"Unexpected response shape: {str(data)[:200]}")
 
 
 # ── validation ────────────────────────────────────────────────────────────────
@@ -142,24 +154,21 @@ DOUBLE_HYPHEN = re.compile(r"--")
 def validate_posts(posts: list[dict]) -> None:
     if len(posts) != 6:
         raise ValueError(f"Expected 6 posts, got {len(posts)}")
-
-    topics = [p.get("topic") for p in posts]
-    if sorted(topics) != sorted(PILLARS):
+    topics = sorted(p.get("topic", "") for p in posts)
+    if topics != sorted(PILLARS):
         raise ValueError(f"Posts must cover all 6 pillars. Got: {topics}")
-
     for p in posts:
         for field in ("title", "description"):
             val = p.get(field, "")
             if DOUBLE_HYPHEN.search(val):
                 raise ValueError(
-                    f"Double hyphen found in post {p.get('topic')} / {field}: {val[:80]}"
+                    f"Double hyphen in {p.get('topic')} / {field}: {val[:80]}"
                 )
 
 
 # ── CSV write ─────────────────────────────────────────────────────────────────
 
 def serialize_csv(rows: list[dict], fieldnames: list[str]) -> str:
-    import io
     buf = io.StringIO()
     writer = csv.DictWriter(buf, fieldnames=fieldnames, quoting=csv.QUOTE_ALL)
     writer.writeheader()
@@ -178,28 +187,26 @@ def append_posts(
     new_rows = []
     for post in posts:
         row = {h: "" for h in fieldnames}
-        row.update(
-            {
-                "week": str(week),
-                "item": f"post-{item_num:03d}",
-                "topic": post.get("topic", ""),
-                "type": post.get("type", ""),
-                "subtopic": post.get("subtopic", ""),
-                "title": post.get("title", ""),
-                "description": post.get("description", ""),
-                "media": post.get("media", ""),
-                "media-type": post.get("media-type", ""),
-                "media URL": "",
-                "linkedin account tag": post.get("linkedin account tag", ""),
-                "hashtag": post.get("hashtag", ""),
-                "score": str(post.get("score", "")),
-                "createdat": today,
-                "updatedat": today,
-                "feedback": "",
-                "feedback-comment": "",
-                "sources": post.get("sources", ""),
-            }
-        )
+        row.update({
+            "week": str(week),
+            "item": f"post-{item_num:03d}",
+            "topic": post.get("topic", ""),
+            "type": post.get("type", ""),
+            "subtopic": post.get("subtopic", ""),
+            "title": post.get("title", ""),
+            "description": post.get("description", ""),
+            "media": post.get("media", ""),
+            "media-type": post.get("media-type", ""),
+            "media URL": "",
+            "linkedin account tag": post.get("linkedin account tag", ""),
+            "hashtag": post.get("hashtag", ""),
+            "score": str(post.get("score", "")),
+            "createdat": today,
+            "updatedat": today,
+            "feedback": "",
+            "feedback-comment": "",
+            "sources": post.get("sources", ""),
+        })
         new_rows.append(row)
         item_num += 1
     return new_rows
@@ -211,26 +218,9 @@ def main() -> None:
     week = week_num()
     fieldnames, existing_rows = load_csv()
     tree = json.loads(Path(TREE_PATH).read_text(encoding="utf-8"))
-    system_prompt = load_skill()
-    user_message = build_user_message(week, existing_rows, tree)
 
-    print(f"Calling {MODEL} to generate week {week} batch…")
-    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-    message = client.messages.create(
-        model=MODEL,
-        max_tokens=8192,
-        system=system_prompt,
-        messages=[{"role": "user", "content": user_message}],
-    )
-    response_text = message.content[0].text
-
-    # Extract JSON array from response
-    m = re.search(r"\[[\s\S]+\]", response_text)
-    if not m:
-        raise ValueError(
-            f"No JSON array found in Claude response:\n{response_text[:500]}"
-        )
-    posts = json.loads(m.group(0))
+    payload = build_payload(week, existing_rows, tree)
+    posts   = call_mac_mini(payload)
 
     validate_posts(posts)
 
@@ -240,7 +230,7 @@ def main() -> None:
     with open(TABLE_PATH, "w", newline="", encoding="utf-8") as f:
         f.write(serialize_csv(all_rows, fieldnames))
 
-    print(f"Added {len(new_rows)} posts:")
+    print(f"Added {len(new_rows)} posts for week {week}:")
     for r in new_rows:
         print(f"  {r['item']} | {r['topic']} / {r['type']} / {r['subtopic']}")
 

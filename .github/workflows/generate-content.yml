@@ -1,5 +1,16 @@
 name: Generate weekly content
 
+# Step 2 of the pipeline (PIPE-2026Q3.yml).
+# Calls the Mac mini listener (via Cloudflare Tunnel) which runs gen_posts.py
+# and returns 6 generated posts as JSON. This Action appends them to the CSV,
+# commits on a content branch, and opens a PR.
+#
+# Requires repo secrets:
+#   GENERATE_CONTENT_URL    — Cloudflare Tunnel URL for the /generate-content endpoint
+#   CF_ACCESS_CLIENT_ID     — Cloudflare Access service token ID
+#   CF_ACCESS_CLIENT_SECRET — Cloudflare Access service token secret
+#   LISTENER_SHARED_SECRET  — shared secret verified by listener.py
+
 on:
   schedule:
     - cron: '0 20 * * 1'   # Monday 8pm UTC = Tuesday 8am NZST (UTC+12)
@@ -27,7 +38,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install anthropic
+        run: pip install requests
 
       - name: Compute week number
         id: week
@@ -44,16 +55,19 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b content/w${{ steps.week.outputs.num }}-batch
 
-      - name: Generate posts
+      - name: Generate posts via Mac mini
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GENERATE_CONTENT_URL: ${{ secrets.GENERATE_CONTENT_URL }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+          LISTENER_SHARED_SECRET: ${{ secrets.LISTENER_SHARED_SECRET }}
           CONTENT_WEEK: ${{ steps.week.outputs.num }}
         run: python3 .github/scripts/gen_posts.py
 
       - name: Commit generated posts
         run: |
           WEEK=${{ steps.week.outputs.num }}
-          FIRST=$(python3 -c "
+          RANGE=$(python3 -c "
           import csv
           rows = list(csv.DictReader(open('COULD/TABLE-2026Q3.csv')))
           week_rows = [r for r in rows if r['week'] == '$WEEK']
@@ -64,13 +78,18 @@ jobs:
               print('no posts')
           ")
           git add COULD/TABLE-2026Q3.csv
-          git commit -m "content(w${WEEK}): generate week ${WEEK} batch — ${FIRST}"
-          git push origin content/w${WEEK}-batch
+          git commit -m "content(w${WEEK}): generate week ${WEEK} batch — ${RANGE}"
+          for attempt in 1 2 3; do
+            if git push origin content/w${WEEK}-batch; then
+              break
+            fi
+            echo "Push rejected (attempt $attempt) — retrying..."
+            git fetch origin content/w${WEEK}-batch 2>/dev/null || true
+            git rebase origin/content/w${WEEK}-batch 2>/dev/null || true
+          done
 
       - name: Generate PR body
-        run: |
-          WEEK=${{ steps.week.outputs.num }}
-          python3 .github/scripts/gen_pr_body.py $WEEK > /tmp/pr_body.md
+        run: python3 .github/scripts/gen_pr_body.py ${{ steps.week.outputs.num }} > /tmp/pr_body.md
 
       - name: Open PR
         env:
