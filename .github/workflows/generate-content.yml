@@ -3,7 +3,8 @@ name: Generate weekly content
 # Step 2 of the pipeline (PIPE-2026Q3.yml).
 # Calls the Mac mini listener (via Cloudflare Tunnel) which runs gen_posts.py
 # and returns 6 generated posts as JSON. This Action appends them to the CSV,
-# commits on a content branch, and opens a PR.
+# commits on the single standing branch content/weekly-batch (reset to main
+# each run, never a new branch), opens a PR, and squash-merges it right away.
 #
 # Requires repo secrets:
 #   GENERATE_CONTENT_URL    — Cloudflare Tunnel URL for the /generate-content endpoint
@@ -20,7 +21,7 @@ on:
         description: 'ISO week number (leave blank to use current week)'
         required: false
       replace:
-        description: 'Replace that week''s existing rows (redo a batch) instead of appending; uses a -redo- branch'
+        description: 'Replace that week''s existing rows (redo a batch) instead of appending'
         type: boolean
         default: false
 
@@ -53,20 +54,11 @@ jobs:
             echo "num=$(python3 -c 'from datetime import date; print(date.today().isocalendar()[1])')" >> $GITHUB_OUTPUT
           fi
 
-      - name: Compute branch name
-        id: branch
-        run: |
-          NAME="content/w${{ steps.week.outputs.num }}-batch"
-          if [ "${{ github.event.inputs.replace }}" = "true" ]; then
-            NAME="$NAME-redo-${{ github.run_number }}"
-          fi
-          echo "name=$NAME" >> $GITHUB_OUTPUT
-
-      - name: Create content branch
+      - name: Reset standing content branch to main
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -b ${{ steps.branch.outputs.name }}
+          git checkout -B content/weekly-batch origin/main
 
       - name: Generate posts via Mac mini
         env:
@@ -93,25 +85,28 @@ jobs:
           ")
           git add COULD/TABLE-2026Q3.csv
           git commit -m "content(w${WEEK}): generate week ${WEEK} batch — ${RANGE}"
-          for attempt in 1 2 3; do
-            if git push origin ${{ steps.branch.outputs.name }}; then
-              break
-            fi
-            echo "Push rejected (attempt $attempt) — retrying..."
-            git fetch origin ${{ steps.branch.outputs.name }} 2>/dev/null || true
-            git rebase origin/${{ steps.branch.outputs.name }} 2>/dev/null || true
-          done
+          # The branch is reused every week and reset to main above, so its
+          # remote copy is always stale or already merged: overwrite it.
+          git fetch origin content/weekly-batch 2>/dev/null || true
+          git push --force-with-lease origin content/weekly-batch
 
       - name: Generate PR body
         run: python3 .github/scripts/gen_pr_body.py ${{ steps.week.outputs.num }} > /tmp/pr_body.md
 
-      - name: Open PR
+      - name: Open PR and merge it
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           WEEK=${{ steps.week.outputs.num }}
-          gh pr create \
-            --title "content(w${WEEK}): week ${WEEK} batch" \
-            --body-file /tmp/pr_body.md \
-            --base main \
-            --head ${{ steps.branch.outputs.name }}
+          TITLE="content(w${WEEK}): week ${WEEK} batch"
+          PR=$(gh pr list --head content/weekly-batch --state open --json number -q '.[0].number')
+          if [ -n "$PR" ]; then
+            gh pr edit "$PR" --title "$TITLE" --body-file /tmp/pr_body.md
+          else
+            gh pr create --title "$TITLE" --body-file /tmp/pr_body.md \
+              --base main --head content/weekly-batch
+            PR=$(gh pr list --head content/weekly-batch --state open --json number -q '.[0].number')
+          fi
+          # Squash-merge immediately; the branch is kept (repo setting
+          # delete_branch_on_merge is off) for the next run to reset.
+          gh pr merge "$PR" --squash --subject "$TITLE"
