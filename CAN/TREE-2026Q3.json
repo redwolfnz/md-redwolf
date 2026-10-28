@@ -10,7 +10,7 @@
       "Red Wolf High Level Security Ltd": { "url": "https://www.linkedin.com/company/red-wolf-high-level-security-ltd", "value": 0 }
     },
     "associations": {
-      "New Zealand Security Association (NZSA)": { "url": "https://www.linkedin.com/company/new-zealand-security-association", "value": 1 },
+      "New Zealand Security Association (NZSA)": { "url": "https://www.linkedin.com/company/new-zealand-security-association", "value": 2 },
       "ASIS International": { "url": "https://www.linkedin.com/company/asis-international", "value": 0 },
       "NZ Police": { "url": "https://www.linkedin.com/company/nz-police", "value": 0 }
     },
@@ -106,7 +106,7 @@
           "type": "Awards & Milestones",
           "subtypes": [
             { "name": "Company Milestones", "description": "Anniversaries, growth achievements, history since 2005", "value": 0 },
-            { "name": "Team Certifications", "description": "Staff qualifications and new accreditations", "value": 0 },
+            { "name": "Team Certifications", "description": "Staff qualifications and new accreditations", "value": 1 },
             { "name": "Project Completions", "description": "Notable installs (anonymised where required)", "value": 0 }
           ]
         }
