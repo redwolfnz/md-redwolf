@@ -2,6 +2,12 @@ ASSET LOG
 
 ####### <!-- ANCHOR MARKER - ADD ALL NEW ASSET ENTRIES DIRECTLY BELOW THIS LINE -->
 
+## ASSET:redwolf 2026-10-28 -> generate-content: Claude API call routed through Mac mini
+
+`gen_posts.py` updated to POST the generation payload to the Mac mini listener via Cloudflare Tunnel instead of calling the Anthropic API directly. Mac mini handles the Claude call (key stored locally) and returns a JSON array of 6 posts. `generate-content.yml` now uses `pip install requests` and the same 4 CF tunnel secrets as `fetch-linkedin` (`GENERATE_CONTENT_URL`, `CF_ACCESS_CLIENT_ID`, `CF_ACCESS_CLIENT_SECRET`, `LISTENER_SHARED_SECRET`). No `ANTHROPIC_API_KEY` in GitHub secrets required.
+
+Pending on Mac mini: `listener.py` needs a `/generate-content` endpoint that reads the payload, calls Claude with `.claude/skills/generate-post/SKILL.md` as system prompt, and returns `{"posts": [...]}` or a bare array.
+
 ## ASSET:redwolf 2026-10-28 -> Pipeline restructure: step-2 is now generate-content (automated)
 
 **PIPE-2026Q3.yml updated** — two-step structure:
