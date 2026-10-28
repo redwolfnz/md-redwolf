@@ -30,6 +30,7 @@ QUARTER      = "2026Q3"
 TABLE_PATH   = f"COULD/TABLE-{QUARTER}.csv"
 TREE_PATH    = f"CAN/TREE-{QUARTER}.json"
 LOG_DIR      = Path("MAY")
+SKILL_PATH   = Path(".claude/skills/generate-post/SKILL.md")
 FETCH_ANCHOR = "####### <!-- ANCHOR MARKER - ADD ALL NEW ENTRIES DIRECTLY BELOW THIS LINE -->"
 
 SLUG_ORDER = [
@@ -110,10 +111,20 @@ def next_item_num(rows: list[dict]) -> int:
     return (max(nums) if nums else 0) + 1
 
 
+def load_system_prompt() -> str:
+    """SKILL.md body (frontmatter stripped), sent to the listener so the Mac
+    mini never needs a git pull to stay current."""
+    text = SKILL_PATH.read_text(encoding="utf-8")
+    if text.startswith("---"):
+        text = text.split("---", 2)[2]
+    return text.strip()
+
+
 def build_payload(week: int, rows: list[dict], tree: dict) -> dict:
     today = date.today()
     window_start = today - timedelta(days=7)
     return {
+        "systemPrompt": load_system_prompt(),
         "quarter": QUARTER,
         "week": week,
         "today": str(today),

@@ -2,6 +2,23 @@ ASSET LOG
 
 ####### <!-- ANCHOR MARKER - ADD ALL NEW ASSET ENTRIES DIRECTLY BELOW THIS LINE -->
 
+## ASSET:redwolf 2026-10-28 -> generate-content listener built on the Mac mini; mirrors fetch-linkedin, runs `claude -p`
+
+Closes the "Pending on Mac mini" item from the entry below. Supersedes its "key stored locally" assumption: no Anthropic API key is used.
+
+**py-redwolf (private):**
+- `listener.py` — new `POST /generate-content`. Same auth as `/fetch` (`X-Listener-Secret` behind CF Access), same `_run_lock`, same subprocess shape as `run_browse_linkedin`: runs `generate_content.py`, 170s timeout, non-zero exit or non-JSON stdout gives 502, an `error` key is passed through as 502 so the Action fails and no PR opens.
+- `generate_content.py` (new) — reads the Action's payload on stdin, runs `claude -p` under the Mac mini's Claude login (`--system-prompt`, `--model claude-opus-5-5`, `--tools ""`, `--no-session-persistence`, `--setting-sources ""`, `--strict-mcp-config`), extracts the JSON array (tolerates code fences) and prints `{"posts": [...]}` or `{"error": ...}`. Absolute path `~/.local/bin/claude` because launchd's PATH is minimal; `CLAUDE_BIN` / `GENERATE_MODEL` in `.env` override.
+- `.env.example` documents the optional overrides.
+
+**md-redwolf:** `gen_posts.py` now sends the `generate-post/SKILL.md` text (frontmatter stripped) as `systemPrompt` in the payload, so the Mac mini never needs a `git pull` to stay current.
+
+**Why `claude -p` and not the API:** the Console API key is a separate pay-per-token bill; `claude -p` runs on the existing Claude subscription login. Mirrors fetch-linkedin's design: Action to CF Tunnel to listener to subprocess. One deliberate difference: a failed generation stops the run (all 6 pillars are required) rather than skipping like a failed connection.
+
+**Verified:** real payload from `build_payload()` (10 connections, 18 used subtypes, 37 KB) through `generate_content.py` in 83s returned 6 posts, one per pillar; `validate_posts()` passed and no subtype repeated. Endpoint error paths (400, 401, error pass-through) checked against a stub.
+
+**Not yet verified:** the call via the launchd-run listener (Claude login under launchd), the Action's POST over the tunnel, and the `GENERATE_CONTENT_URL` secret / tunnel route to `:8787`. Listener needs a restart to pick up the new code. One generated PEOPLE post shortened a person's name to "R." in the title; check in the review PR.
+
 ## ASSET:redwolf 2026-10-28 -> generate-content: Claude API call routed through Mac mini
 
 `gen_posts.py` updated to POST the generation payload to the Mac mini listener via Cloudflare Tunnel instead of calling the Anthropic API directly. Mac mini handles the Claude call (key stored locally) and returns a JSON array of 6 posts. `generate-content.yml` now uses `pip install requests` and the same 4 CF tunnel secrets as `fetch-linkedin` (`GENERATE_CONTENT_URL`, `CF_ACCESS_CLIENT_ID`, `CF_ACCESS_CLIENT_SECRET`, `LISTENER_SHARED_SECRET`). No `ANTHROPIC_API_KEY` in GitHub secrets required.
