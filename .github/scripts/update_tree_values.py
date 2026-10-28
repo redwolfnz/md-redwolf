@@ -9,7 +9,8 @@ One rule, applied to both sides of every rated post:
     topic / type / subtopic (== tree category / type / subtype name).
     Written as "value" on the one-line subtype objects.
   - connections: each rated post credits every connection named in its
-    free-text "sources" column or tagged in its "linkedin account tag" column
+    free-text "sources" column (by company page URL, or by name as a fallback)
+    or tagged in its "linkedin account tag" column
     (own / associations / partners). Each entry in
     connections{} is { "url": ..., "value": N }.
 
@@ -78,6 +79,16 @@ def load_rated_rows() -> list:
     return rows
 
 
+COMPANY_URL_RE = re.compile(r"(?:https?://)?(?:www\.)?linkedin\.com/company/([^/?#\s;,]+)\S*", re.I)
+
+
+def company_slug(url: str):
+    """Company slug from a LinkedIn company page URL (scheme, www., trailing
+    /home/ or /posts/ ignored), or None."""
+    m = COMPANY_URL_RE.search(url or "")
+    return m.group(1).lower() if m else None
+
+
 def alias_patterns(name: str) -> list:
     spellings = {re.sub(r"\s*\(.*?\)", "", name).strip(), name, *ALIASES.get(name, [])}
     spellings.update(re.findall(r"\(([^)]+)\)", name))
@@ -85,14 +96,22 @@ def alias_patterns(name: str) -> list:
 
 
 def connection_values(connections: dict, rated: list) -> dict:
+    # Per post: the company slugs cited as URLs, and the remaining text (URLs
+    # stripped, so a short name can't match inside someone else's URL).
+    cited = []
+    for score, _, _, _, text in rated:
+        slugs = {m.group(1).lower() for m in COMPANY_URL_RE.finditer(text)}
+        cited.append((score, slugs, COMPANY_URL_RE.sub(" ", text)))
+
     values = {}
     for group in GROUPS:
         values[group] = {}
-        for name in connections.get(group, {}):
+        for name, entry in connections.get(group, {}).items():
+            slug = company_slug(entry.get("url") if isinstance(entry, dict) else entry)
             pats = alias_patterns(name)
             values[group][name] = sum(
-                score for score, _, _, _, sources in rated
-                if any(p.search(sources) for p in pats)
+                score for score, slugs, plain in cited
+                if (slug and slug in slugs) or any(p.search(plain) for p in pats)
             )
     return values
 

@@ -18,7 +18,7 @@ You receive a JSON object with:
 - `nextItemStart` — integer to start post numbering from (informational only)
 - `usedSubtypes` — list of `{topic, type, subtopic}` objects already used this quarter (do not repeat any)
 - `tree` — full TREE JSON (pillars → types → subtypes with descriptions). Each subtype also carries `value` (reviewer feedback: wins minus losses, win +1, tie 0, lost −1), and so does each entry in `connections` (own / associations / partners: `{ "url", "value" }`), credited from the `sources` and `linkedin account tag` of rated posts
-- `connections` — per-connection snapshot: `slug`, `companyName`, `bio`, `fetchedAt`, `recentPosts` filtered to the window
+- `connections` — per-connection snapshot: `slug`, `companyName`, `url`, `bio`, `fetchedAt`, `recentPosts` filtered to the window
 
 ## Your task
 
@@ -71,7 +71,7 @@ For each pillar:
 - 6: Useful but not tightly tied to Red Wolf or a specific event
 - 1–5: Too generic, no NZ angle, or filler — avoid
 
-**`sources`** — one short line naming what connection activity or data informed this angle (e.g. `ASIS International post 2026-10-25`, `NZSA announcement re staff transitions`). Empty string if written from first principles with no specific source. Name each connection by its full name from `connections` (or its slug, e.g. `NZSA`): step 1b counts these mentions per connection to track which connections get used.
+**`sources`** — one short line naming what connection activity or data informed this angle. Cite each connection by its full LinkedIn company page URL, exactly as given in that connection's `url` in `connections`, followed by a short note, e.g. `https://www.linkedin.com/company/asis-international — post 2026-10-25 on active assailant response`. Separate several connections with `;`. The scraped post links are the company page, not individual posts, so cite the company URL. Empty string if written from first principles with no specific source. Step 1b matches these URLs to connections to track which connections get used.
 
 ## Rules
 

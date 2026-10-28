@@ -79,6 +79,7 @@ def load_connections(window_start: date, window_end: date) -> list[dict]:
         connections.append({
             "slug": slug,
             "companyName": data.get("companyName", slug),
+            "url": data.get("url", ""),
             "bio": data.get("bio", ""),
             "fetchedAt": data.get("fetchedAt", ""),
             "recentPosts": recent,
