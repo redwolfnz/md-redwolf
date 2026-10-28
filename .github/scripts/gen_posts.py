@@ -49,7 +49,8 @@ def week_num() -> int:
 
 
 def parse_latest_log_entry(slug: str) -> dict | None:
-    log = LOG_DIR / f"{slug}-{QUARTER}.log"
+    """Newest entry for this connection in the single fetch log (newest first)."""
+    log = LOG_DIR / f"LOG-FETCH-{QUARTER}.log"
     if not log.exists():
         return None
     text = log.read_text(encoding="utf-8")
@@ -57,13 +58,14 @@ def parse_latest_log_entry(slug: str) -> dict | None:
     if anchor_pos == -1:
         return None
     after = text[anchor_pos + len(FETCH_ANCHOR):]
-    m = re.search(r"## \S+\n(\{[^\n]+\})", after)
-    if not m:
-        return None
-    try:
-        return json.loads(m.group(1))
-    except json.JSONDecodeError:
-        return None
+    for m in re.finditer(r"## \S+ (\S+)\n(\{[^\n]+\})", after):
+        if m.group(1) != slug:
+            continue
+        try:
+            return json.loads(m.group(2))
+        except json.JSONDecodeError:
+            return None
+    return None
 
 
 def load_connections(window_start: date, window_end: date) -> list[dict]:

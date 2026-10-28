@@ -56,20 +56,25 @@ def mermaid_block() -> str:
     ).strip()
 
 
-def _parse_latest_entry(log_path: Path) -> dict | None:
+def _parse_latest_entry(slug: str) -> dict | None:
+    """Newest entry for this connection in the single fetch log (newest first)."""
+    log_path = Path(f"MAY/LOG-FETCH-{QUARTER}.log")
+    if not log_path.exists():
+        return None
     text = log_path.read_text(encoding="utf-8")
     after = text[text.find(FETCH_ANCHOR) + len(FETCH_ANCHOR):]
-    m = re.search(r"## \S+\n(\{[^\n]+\})", after)
-    if not m:
-        return None
-    try:
-        return json.loads(m.group(1))
-    except json.JSONDecodeError:
-        return None
+    for m in re.finditer(r"## \S+ (\S+)\n(\{[^\n]+\})", after):
+        if m.group(1) != slug:
+            continue
+        try:
+            return json.loads(m.group(2))
+        except json.JSONDecodeError:
+            return None
+    return None
 
 
 def connection_activity(week: int) -> str:
-    """Return posts from COULD/<SLUG>-*.log within the last 7 days (rolling window).
+    """Return posts from MAY/LOG-FETCH-*.log within the last 7 days (rolling window).
 
     Anchored to today so the section is fairly labelled as this week's signals
     regardless of where the ISO week boundary falls.
@@ -79,10 +84,7 @@ def connection_activity(week: int) -> str:
 
     blocks = []
     for slug in SLUG_ORDER:
-        log_path = Path(f"MAY/{slug}-{QUARTER}.log")
-        if not log_path.exists():
-            continue
-        data = _parse_latest_entry(log_path)
+        data = _parse_latest_entry(slug)
         if not data:
             continue
         week_posts = [

@@ -1,6 +1,6 @@
 ---
 name: fetch-linkedin
-description: Use during STEP 1a (RESEARCH / fetch()) of a Red Wolf content batch. Reads the cached per-connection LinkedIn snapshots in CAN/TREE-<SLUG>-<quarter>.json — written weekly by the fetch-linkedin GitHub Action — instead of calling LinkedIn directly, which blocks unauthenticated fetch(). Summarizes recent partner/association activity to inform STEP 1b subtype selection.
+description: Use during STEP 1a (RESEARCH / fetch()) of a Red Wolf content batch. Reads the cached per-connection LinkedIn snapshots in the single MAY/LOG-FETCH-<quarter>.log — written weekly by the fetch-linkedin GitHub Action — instead of calling LinkedIn directly, which blocks unauthenticated fetch(). Summarizes recent partner/association activity to inform STEP 1b subtype selection.
 ---
 
 # fetch-linkedin
@@ -45,23 +45,25 @@ replaces the old instruction to `fetch()` each LinkedIn page URL directly.
    uppercase slug the same way (first/most distinctive word, no spaces) and
    add it to this table in the same edit that adds the connection.
 
-3. **Read each cache log.**
-   For every slug, look for `MAY/<SLUG>-<quarter>.log`
-   (e.g. `MAY/NZSA-2026Q3.log`). Each file is an append log — newest
-   entry first, just below the anchor marker. Each entry is two lines:
+3. **Read the fetch log.**
+   All connections share one append log, `MAY/LOG-FETCH-<quarter>.log`
+   (e.g. `MAY/LOG-FETCH-2026Q3.log`) — newest entry first, just below the
+   anchor marker. Each entry is two lines, headed by the fetch time and the
+   connection's slug:
 
    ```
-   ## <fetchedAt ISO timestamp>
+   ## <fetchedAt ISO timestamp> <SLUG>
    {"slug":"NZSA","companyName":"...","url":"...","fetchedAt":"...","followerCount":0,"bio":"...","recentPosts":[...]}
    ```
 
-   To read the **most recent** entry (default): take the first `## ` block
-   after the anchor marker and parse the JSON line that follows it.
+   To read the **most recent** entry for a slug (default): take the first
+   `## <timestamp> <SLUG>` block for that slug after the anchor marker and
+   parse the JSON line that follows it.
 
    To read the entry **closest to a specific date** (e.g. when auditing
-   why a past batch made a particular selection): scan all `## <timestamp>`
-   headers and pick the entry whose `fetchedAt` is ≤ the target date and
-   closest to it.
+   why a past batch made a particular selection): scan the `## <timestamp>
+   <SLUG>` headers for that slug and pick the entry whose `fetchedAt` is ≤
+   the target date and closest to it.
 
    The JSON shape within each entry:
    ```json
@@ -116,8 +118,8 @@ replaces the old instruction to `fetch()` each LinkedIn page URL directly.
 
 - Never call `fetch()` or any LinkedIn URL directly from this skill — that's
   exactly the unauthenticated path this design replaces.
-- Never write or edit `CAN/TREE-<SLUG>-<quarter>.json` from here — those files
-  are owned by the `fetch-linkedin` GitHub Action.
+- Never write or edit `MAY/LOG-FETCH-<quarter>.log` from here — that file
+  is owned by the `fetch-linkedin` GitHub Action.
 - The quarter suffix (`2026Q3`) is hardcoded per the current quarter's key
   files; update it at quarter rollover alongside the rest of the files listed
   in README's QUARTER ROLLOVER section.

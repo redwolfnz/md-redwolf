@@ -6,7 +6,8 @@ Reads CAN/TREE-2026Q3.json's connections{}, maps each to its fixed slug
 (same table as .claude/skills/fetch-linkedin/SKILL.md — keep both in
 sync if connections{} ever changes), and calls py-redwolf's listener
 once per connection, sequentially with a pause between calls, prepending
-each successful response as a new dated entry in COULD/<SLUG>-2026Q3.log.
+each successful response as a new dated entry at the top of the single
+MAY/LOG-FETCH-2026Q3.log (one `## <fetchedAt> <SLUG>` entry per connection per run).
 
 A failed/unreachable call for one connection is logged and skipped —
 it never fails the whole job, and never touches that connection's
@@ -32,6 +33,7 @@ TREE_FILE = REPO_ROOT / "CAN" / f"TREE-{QUARTER}.json"
 SECONDS_BETWEEN_CALLS = 30
 REQUEST_TIMEOUT = 90
 ANCHOR = "####### <!-- ANCHOR MARKER - ADD ALL NEW ENTRIES DIRECTLY BELOW THIS LINE -->"
+LOG_PATH = REPO_ROOT / "MAY" / f"LOG-FETCH-{QUARTER}.log"
 
 # Must match .claude/skills/fetch-linkedin/SKILL.md's mapping table.
 SLUG_MAP = {
@@ -96,10 +98,10 @@ def fetch_one(base_url: str, slug: str, company_name: str, url: str,
 
 
 def prepend_entry(log_path: Path, slug: str, data: dict) -> None:
-    """Prepend a new ## <fetchedAt> / <compact JSON> entry to the log."""
+    """Prepend a new ## <fetchedAt> <SLUG> / <compact JSON> entry to the log."""
     fetched_at = data.get("fetchedAt", "unknown")
     compact = json.dumps(data, separators=(",", ":"))
-    new_entry = f"## {fetched_at}\n{compact}\n"
+    new_entry = f"## {fetched_at} {slug}\n{compact}\n"
 
     if log_path.exists():
         text = log_path.read_text(encoding="utf-8")
@@ -111,7 +113,7 @@ def prepend_entry(log_path: Path, slug: str, data: dict) -> None:
         insert_at = marker_pos + len(ANCHOR)
         text = text[:insert_at] + f"\n\n{new_entry}" + text[insert_at:].lstrip("\n")
     else:
-        text = f"FETCH LOG — {slug} — {QUARTER}\n\n{ANCHOR}\n\n{new_entry}"
+        text = f"FETCH LOG — {QUARTER}\n\n{ANCHOR}\n\n{new_entry}"
 
     log_path.write_text(text, encoding="utf-8")
 
@@ -142,10 +144,9 @@ def main() -> int:
                 print(f"slug={slug}: non-JSON response — skipping", file=sys.stderr)
                 skipped += 1
                 continue
-            log_path = REPO_ROOT / "MAY" / f"{slug}-{QUARTER}.log"
-            prepend_entry(log_path, slug, parsed)
+            prepend_entry(LOG_PATH, slug, parsed)
             fetched += 1
-            print(f"slug={slug}: prepended entry to {log_path.relative_to(REPO_ROOT)}")
+            print(f"slug={slug}: prepended entry to {LOG_PATH.relative_to(REPO_ROOT)}")
 
         if i < len(connections) - 1:
             time.sleep(SECONDS_BETWEEN_CALLS)
