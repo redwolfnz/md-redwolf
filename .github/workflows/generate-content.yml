@@ -60,6 +60,9 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -B content/weekly-batch origin/main
 
+      - name: Refresh subtype values from feedback
+        run: python3 .github/scripts/update_tree_values.py
+
       - name: Generate posts via Mac mini
         env:
           GENERATE_CONTENT_URL: ${{ secrets.GENERATE_CONTENT_URL }}
@@ -83,7 +86,7 @@ jobs:
           else:
               print('no posts')
           ")
-          git add COULD/TABLE-2026Q3.csv
+          git add COULD/TABLE-2026Q3.csv CAN/TREE-2026Q3.json
           git commit -m "content(w${WEEK}): generate week ${WEEK} batch — ${RANGE}"
           # The branch is reused every week and reset to main above, so its
           # remote copy is always stale or already merged: overwrite it.

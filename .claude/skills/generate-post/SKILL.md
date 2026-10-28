@@ -17,7 +17,7 @@ You receive a JSON object with:
 - `window` — the 7-day window for connection activity (e.g. `2026-10-21 to 2026-10-28`)
 - `nextItemStart` — integer to start post numbering from (informational only)
 - `usedSubtypes` — list of `{topic, type, subtopic}` objects already used this quarter (do not repeat any)
-- `tree` — full TREE JSON (pillars → types → subtypes with descriptions)
+- `tree` — full TREE JSON (pillars → types → subtypes with descriptions). Each subtype also carries `value` (reviewer feedback: wins minus losses, win +1, tie 0, lost −1) and `rated` (how many posts that is based on)
 - `connections` — per-connection snapshot: `slug`, `companyName`, `bio`, `fetchedAt`, `recentPosts` filtered to the window
 
 ## Your task
@@ -33,7 +33,8 @@ For each pillar:
 1. Find subtypes not yet in `usedSubtypes` for that pillar.
 2. Prefer subtypes where connection activity in the window provides a concrete hook — a partner product update, association announcement, industry study, or regulatory change.
 3. If no connection activity is relevant, choose the most timely or strategically useful available subtype and write from first principles.
-4. Choose a media type that serves the post's purpose:
+4. When several unused subtypes are otherwise equally good, prefer the higher `value`, and weigh it by `rated`: `value: 1, rated: 1` is a hint, not a trend. Never pick a subtype only because of its value, and never pick a used one. Do not confuse `value` with a post's `score` (your own 1–10 rating below).
+5. Choose a media type that serves the post's purpose:
    - `png` — branded graphic, infographic, stat card, compliance diagram, expert opinion card
    - `jpg` — real photo (staff, site visit, event, install day)
    - `gif` — short looping animation (process flow, failover diagram, before/after)
