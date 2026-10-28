@@ -15,13 +15,19 @@ on:
     # Sunday 20:00 UTC — before the Monday (NZT) batch day. Adjust if
     # the batch day changes.
     - cron: "0 20 * * 0"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      skip_fetch:
+        description: 'Skip step 1a (the LinkedIn fetch) and run only step 1b (refresh-values)'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
 
 jobs:
   fetch:
+    if: ${{ github.event.inputs.skip_fetch != 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
