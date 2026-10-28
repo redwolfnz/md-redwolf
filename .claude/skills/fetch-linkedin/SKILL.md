@@ -22,7 +22,7 @@ replaces the old instruction to `fetch()` each LinkedIn page URL directly.
 
 1. **Load the connection list.**
    Read `CAN/TREE-<quarter>.json` (e.g. `CAN/TREE-2026Q3.json`) and pull
-   `connections{}` — `own`, `associations`, `partners`.
+   `connections{}` — `own`, `associations`, `partners`. Each entry is `{ "url": ..., "value": N }`; use `url` (`value` is reviewer feedback, written by step 1b, and is not needed here).
 
 2. **Map each connection to its cache slug.**
    Slugs are short, uppercase, and fixed — not derived from the LinkedIn URL.

@@ -42,9 +42,9 @@ def gen_mermaid(path: str) -> str:
                 continue
             grp_id = f'CONN_{group}'
             lines.append(f'  CONNECTIONS --> {grp_id}["{label}"]')
-            for name in members:
+            for name, entry in members.items():
                 mem_id = f'{grp_id}_{safe_id(name)}'
-                value = data.get("connectionsValue", {}).get(group, {}).get(name, 0)
+                value = entry.get("value", 0) if isinstance(entry, dict) else 0
                 shown = f"{name} · {value:+d}" if value else name
                 if value:
                     classed["win" if value > 0 else "lost"].append(mem_id)

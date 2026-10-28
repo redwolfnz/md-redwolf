@@ -9,16 +9,15 @@ One rule, applied to both sides of every rated post:
     topic / type / subtopic (== tree category / type / subtype name).
     Written as "value" on the one-line subtype objects.
   - connections: each rated post credits every connection cited in its
-    free-text "sources" column (own / associations / partners). Written to a
-    top-level "connectionsValue" object laid out like connections{}. It is a
-    sibling key on purpose: connections{} maps name -> url and the fetch
-    script, skill and Mermaid generator all read it that way.
+    free-text "sources" column (own / associations / partners). Each entry in
+    connections{} is { "url": ..., "value": N }.
 
 Counts come from COULD/TABLE-<quarter>.csv. Unrated posts count for nothing.
 
-The tree is hand-edited, so only the subtype lines and the connectionsValue
-block are rewritten; every other byte is left alone. Idempotent. A stale
-"rated" field or "connectionsUsed" block from earlier versions is removed.
+The tree is hand-edited, so only the subtype lines and the connections{} entry
+lines are rewritten; every other byte is left alone. Idempotent. A stale
+"rated" field, or a "connectionsValue" / "connectionsUsed" block from earlier
+versions, is removed.
 Feedback rows that match no subtype are printed to stderr (a renamed subtype
 would otherwise silently lose its value).
 
@@ -39,7 +38,7 @@ TABLE_PATH = ROOT / "COULD" / f"TABLE-{QUARTER}.csv"
 
 SCORES = {"win": 1, "tie": 0, "lost": -1}
 GROUPS = ("own", "associations", "partners")
-BLOCK_KEYS = ('  "connectionsValue"', '  "connectionsUsed"')  # current, retired
+RETIRED_BLOCKS = ('  "connectionsValue"', '  "connectionsUsed"')
 
 # Extra spellings the generator may use in "sources" for each connection
 # (its full name, and any parenthetical in it, are always matched too).
@@ -58,6 +57,7 @@ ALIASES = {
 CATEGORY_RE = re.compile(r'^\s*"category":\s*(".*"),?\s*$')
 TYPE_RE = re.compile(r'^\s*"type":\s*(".*"),?\s*$')
 SUBTYPE_RE = re.compile(r'^(\s*)(\{.*\})(,?)\s*$')
+CONN_RE = re.compile(r'^(\s+)("(?:[^"\\]|\\.)*"):\s*(.+?)(,?)\s*$')
 
 
 def load_rated_rows() -> list:
@@ -92,28 +92,14 @@ def connection_values(connections: dict, rated: list) -> dict:
     return values
 
 
-def render_block(values: dict) -> list:
-    lines = ['  "connectionsValue": {']
-    groups = [g for g in GROUPS if values.get(g)]
-    for gi, group in enumerate(groups):
-        lines.append(f'    {json.dumps(group)}: {{')
-        names = list(values[group])
-        for ni, name in enumerate(names):
-            comma = "," if ni < len(names) - 1 else ""
-            lines.append(f'      {json.dumps(name, ensure_ascii=False)}: {values[group][name]}{comma}')
-        lines.append("    }" + ("," if gi < len(groups) - 1 else ""))
-    lines.append("  },")
-    return lines
-
-
-def apply_block(lines: list, block: list) -> list:
-    """Replace an existing (or retired) connections block, else insert before "tree"."""
-    for i, line in enumerate(lines):
-        if line.startswith(BLOCK_KEYS):
-            end = next(j for j in range(i, len(lines)) if lines[j] == "  },")
-            return lines[:i] + block + lines[end + 1:]
-    at = next(i for i, line in enumerate(lines) if line.startswith('  "tree"'))
-    return lines[:at] + block + lines[at:]
+def drop_retired_blocks(lines: list) -> list:
+    """Remove the earlier sibling connectionsValue / connectionsUsed block."""
+    while True:
+        start = next((i for i, l in enumerate(lines) if l.startswith(RETIRED_BLOCKS)), None)
+        if start is None:
+            return lines
+        end = next(j for j in range(start, len(lines)) if lines[j] == "  },")
+        lines = lines[:start] + lines[end + 1:]
 
 
 def main() -> None:
@@ -122,11 +108,26 @@ def main() -> None:
     for score, topic, type_, subtopic, _ in rated:
         subtype_values[(topic, type_, subtopic)] += score
 
+    connections = json.loads(TREE_PATH.read_text(encoding="utf-8")).get("connections", {})
+    conn_values = connection_values(connections, rated)
+
     seen = set()
     category = type_ = None
+    in_conn = False
     out = []
     for line in TREE_PATH.read_text(encoding="utf-8").split("\n"):
-        if m := CATEGORY_RE.match(line):
+        if line.startswith('  "connections": {'):
+            in_conn = True
+        elif in_conn and line == "  },":
+            in_conn = False
+        elif in_conn and (m := CONN_RE.match(line)) and not m.group(3).endswith("{"):
+            name = json.loads(m.group(2))
+            raw = json.loads(m.group(3)) if not m.group(3).startswith("{") else json.loads(m.group(3))
+            url = raw["url"] if isinstance(raw, dict) else raw
+            group_values = next((g for g in conn_values.values() if name in g), {})
+            line = (f'{m.group(1)}{json.dumps(name, ensure_ascii=False)}: '
+                    f'{{ "url": {json.dumps(url)}, "value": {group_values.get(name, 0)} }}{m.group(4)}')
+        elif m := CATEGORY_RE.match(line):
             category = json.loads(m.group(1))
         elif m := TYPE_RE.match(line):
             type_ = json.loads(m.group(1))
@@ -147,10 +148,7 @@ def main() -> None:
         if key not in seen:
             print(f"WARNING: feedback for {key} matches no tree subtype", file=sys.stderr)
 
-    connections = json.loads(TREE_PATH.read_text(encoding="utf-8")).get("connections", {})
-    out = apply_block(out, render_block(connection_values(connections, rated)))
-
-    new = "\n".join(out)
+    new = "\n".join(drop_retired_blocks(out))
     if new != TREE_PATH.read_text(encoding="utf-8"):
         TREE_PATH.write_text(new, encoding="utf-8")
         print("Tree values updated.")

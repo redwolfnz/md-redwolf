@@ -7,38 +7,20 @@
   },
   "connections": {
     "own": {
-      "Red Wolf High Level Security Ltd": "https://www.linkedin.com/company/red-wolf-high-level-security-ltd"
+      "Red Wolf High Level Security Ltd": { "url": "https://www.linkedin.com/company/red-wolf-high-level-security-ltd", "value": 0 }
     },
     "associations": {
-      "New Zealand Security Association (NZSA)": "https://www.linkedin.com/company/new-zealand-security-association",
-      "ASIS International": "https://www.linkedin.com/company/asis-international",
-      "NZ Police": "https://www.linkedin.com/company/nz-police"
+      "New Zealand Security Association (NZSA)": { "url": "https://www.linkedin.com/company/new-zealand-security-association", "value": 0 },
+      "ASIS International": { "url": "https://www.linkedin.com/company/asis-international", "value": 0 },
+      "NZ Police": { "url": "https://www.linkedin.com/company/nz-police", "value": 0 }
     },
     "partners": {
-      "Johnson Controls": "https://www.linkedin.com/company/johnson-controls",
-      "Gallagher Security": "https://www.linkedin.com/company/gallagher-security",
-      "Inner Range ANZ": "https://www.linkedin.com/company/inner-range-anz",
-      "Bosch Security and Safety Systems": "https://www.linkedin.com/company/bosch-security-systems",
-      "Integrated Control Technology (ICT)": "https://www.linkedin.com/company/integrated-control-technology",
-      "Jacques Technologies": "https://www.linkedin.com/company/jacques"
-    }
-  },
-  "connectionsValue": {
-    "own": {
-      "Red Wolf High Level Security Ltd": 0
-    },
-    "associations": {
-      "New Zealand Security Association (NZSA)": 0,
-      "ASIS International": 0,
-      "NZ Police": 0
-    },
-    "partners": {
-      "Johnson Controls": 0,
-      "Gallagher Security": 0,
-      "Inner Range ANZ": 0,
-      "Bosch Security and Safety Systems": 0,
-      "Integrated Control Technology (ICT)": 0,
-      "Jacques Technologies": 0
+      "Johnson Controls": { "url": "https://www.linkedin.com/company/johnson-controls", "value": 0 },
+      "Gallagher Security": { "url": "https://www.linkedin.com/company/gallagher-security", "value": 0 },
+      "Inner Range ANZ": { "url": "https://www.linkedin.com/company/inner-range-anz", "value": 0 },
+      "Bosch Security and Safety Systems": { "url": "https://www.linkedin.com/company/bosch-security-systems", "value": 0 },
+      "Integrated Control Technology (ICT)": { "url": "https://www.linkedin.com/company/integrated-control-technology", "value": 0 },
+      "Jacques Technologies": { "url": "https://www.linkedin.com/company/jacques", "value": 0 }
     }
   },
   "tree": [

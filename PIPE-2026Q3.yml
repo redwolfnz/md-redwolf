@@ -59,8 +59,8 @@ steps:
         # Repo-only job after 1a in fetch-linkedin.yml (no Mac mini needed).
         # One rule, two targets: value = wins - losses (win +1, tie 0, lost -1).
         #   - every subtype in the tree gets "value" from its rated posts
-        #   - every connection (own/associations/partners) gets a value in
-        #     the tree's "connectionsValue", credited from rated posts whose
+        #   - every connection (own/associations/partners) gets "value" next to
+        #     its "url" in connections{}, credited from rated posts whose
         #     "sources" column cites it
         # Step 2 re-runs it just before generating; generate-post uses it as a
         # tiebreaker between otherwise equal unused subtypes.

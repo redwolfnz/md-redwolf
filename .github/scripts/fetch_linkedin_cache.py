@@ -54,7 +54,9 @@ def load_connections() -> list[tuple[str, str, str]]:
     connections = data.get("connections", {})
     out = []
     for group in ("own", "associations", "partners"):
-        for name, url in connections.get(group, {}).items():
+        for name, entry in connections.get(group, {}).items():
+            # entry is { "url": ..., "value": N } (a bare URL string is also accepted)
+            url = entry["url"] if isinstance(entry, dict) else entry
             slug = SLUG_MAP.get(name)
             if not slug:
                 print(f"WARNING: no slug mapping for connection {name!r} — "
