@@ -165,7 +165,8 @@
           "subtypes": [
             { "name": "ISO 9001", "description": "Quality management messaging and what it means for clients", "value": 0 },
             { "name": "NZSA Accreditation", "description": "Trust signals for procurement and tenders", "value": 0 },
-            { "name": "Insurance & Liability", "description": "How accreditation reduces client risk exposure", "value": 0 }
+            { "name": "Insurance & Liability", "description": "How accreditation reduces client risk exposure", "value": 0 },
+            { "name": "ISO 45001", "description": "Occupational health and safety management certification and what it means for clients and site safety", "value": 0 }
           ]
         }
       ]
@@ -186,7 +187,9 @@
           "subtypes": [
             { "name": "Security Awareness Month", "description": "October campaign content", "value": 0 },
             { "name": "End-of-Year Reviews", "description": "Q4 wrap-up, year-in-review for security", "value": 0 },
-            { "name": "Product / Service Launch", "description": "New capability and solution announcements", "value": 0 }
+            { "name": "Product / Service Launch", "description": "New capability and solution announcements", "value": 0 },
+            { "name": "Key Security Dates", "description": "Security-related dates and awareness days worth posting around", "value": 0 },
+            { "name": "End-of-Year Wins", "description": "Year's milestones, awards and client outcomes celebrated before the year closes", "value": 0 }
           ]
         },
         {
