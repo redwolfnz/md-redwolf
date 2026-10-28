@@ -61,7 +61,7 @@ steps:
         #   - every subtype in the tree gets "value" from its rated posts
         #   - every connection (own/associations/partners) gets "value" next to
         #     its "url" in connections{}, credited from rated posts whose
-        #     "sources" or "linkedin account tag" column names it
+        #     "sources" column cites it (company page URL; tags are ignored)
         # Step 2 re-runs it just before generating; generate-post uses it as a
         # tiebreaker between otherwise equal unused subtypes.
         reads:

@@ -9,8 +9,8 @@ One rule, applied to both sides of every rated post:
     topic / type / subtopic (== tree category / type / subtype name).
     Written as "value" on the one-line subtype objects.
   - connections: each rated post credits every connection named in its
-    free-text "sources" column (by company page URL, or by name as a fallback)
-    or tagged in its "linkedin account tag" column
+    free-text "sources" column (by company page URL, or by name as a fallback);
+    the "linkedin account tag" column is deliberately not used
     (own / associations / partners). Each entry in
     connections{} is { "url": ..., "value": N }.
 
@@ -70,10 +70,11 @@ def load_rated_rows() -> list:
             row = {(k or "").strip(): v for k, v in row.items()}
             verdict = (row.get("feedback") or "").strip().lower()
             if verdict in SCORES:
-                # A connection is credited if the post cites it in "sources" or
-                # tags it in "linkedin account tag" (the latter is filled on
-                # every post; the own page is tagged on all of them).
-                cited = f'{row.get("sources") or ""} {row.get("linkedin account tag") or ""}'
+                # Connections are credited from "sources" only (company page
+                # URLs; names as a fallback). The tag column is ignored: the own
+                # page is tagged on every post and tags are sometimes added
+                # for reach, not because the connection informed the post.
+                cited = row.get("sources") or ""
                 rows.append((SCORES[verdict], row["topic"], row["type"],
                              row["subtopic"], cited))
     return rows
