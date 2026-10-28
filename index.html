@@ -243,23 +243,23 @@ async function submitFeedback(postId, result, comment, btn, statusEl, allBtns, c
       if (row) { row.feedback = result; row["feedback-comment"] = comment; }
       return !!row;
     };
-    applyChange();
     let res;
     for (let attempt = 0; attempt < 3; attempt++) {
+      // Always start from the latest CSV on main (this also refreshes csvSha) and
+      // reapply only this one change to it. The rows loaded with the page may be
+      // stale (a bot or another person committed since), and writing them back
+      // would overwrite those edits.
+      const fresh = await fetchCSV();
+      csvHeaders = parseHeaders(fresh);
+      csvRows    = parseCSV(fresh);
+      if (!applyChange()) throw new Error(`${postId} is no longer in the CSV`);
       res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${CSV_PATH}`, {
         method: "PUT",
         headers: { "Authorization": `Bearer ${TOKEN}`, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
         body: JSON.stringify({ message: `feedback: ${postId} -> ${result || "cleared"}`, content: toBase64(serializeCSV(csvRows, csvHeaders)), sha: csvSha })
       });
+      // 409: someone committed between our fetch and our update; go round again.
       if (res.status !== 409) break;
-      // 409: the CSV changed on main after this page loaded (a bot, or someone
-      // else's commit). Refetch the fresh file (this also refreshes csvSha),
-      // reapply only this one change to it, and retry. Never resend the old
-      // rows: that would overwrite the other writer's edits.
-      const fresh = await fetchCSV();
-      csvHeaders = parseHeaders(fresh);
-      csvRows    = parseCSV(fresh);
-      if (!applyChange()) throw new Error(`${postId} is no longer in the CSV`);
     }
     if (res.status === 200 || res.status === 201) {
       const json = await res.json();
