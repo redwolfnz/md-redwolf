@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Generate a Mermaid graph LR from CAN/TREE-<quarter>.json.
 
-Writes a ```mermaid block to stdout.
+Writes a ```mermaid block to stdout. Subtypes carrying reviewer feedback
+(`rated` > 0 in the tree) show their net `value` and are coloured by outcome.
 Called by update-tree-mermaid.yml; update TREE_FILE at quarter rollover.
 """
 
@@ -43,6 +44,8 @@ def gen_mermaid(path: str) -> str:
                 mem_id = f'{grp_id}_{safe_id(name)}'
                 lines.append(f'  {grp_id} --> {mem_id}("{name}")')
 
+    classed = {"win": [], "lost": [], "tie": []}
+
     # tree[] — grouped under a TREE node to match JSON structure
     lines.append('  ROOT --> TREE["tree"]')
     for cat in data["tree"]:
@@ -53,7 +56,24 @@ def gen_mermaid(path: str) -> str:
             lines.append(f'  {cat_id} --> {type_id}["{t["type"]}"]')
             for s in t["subtypes"]:
                 sub_id = f'{type_id}_{safe_id(s["name"])}'
-                lines.append(f'  {type_id} --> {sub_id}("{s["name"]}")')
+                label = s["name"]
+                # value/rated are written by update_tree_values.py; only
+                # subtypes with at least one rated post get a badge + colour.
+                rated = s.get("rated", 0)
+                if rated:
+                    value = s.get("value", 0)
+                    label += f' · {value:+d} ({rated})' if value else f' · 0 ({rated})'
+                    outcome = "win" if value > 0 else "lost" if value < 0 else "tie"
+                    classed[outcome].append(sub_id)
+                lines.append(f'  {type_id} --> {sub_id}("{label}")')
+
+    # Colour rated subtypes: green = net win, red = net lost, grey = tie
+    lines.append("  classDef win fill:#d4edda,stroke:#2e7d32,color:#1b5e20")
+    lines.append("  classDef lost fill:#f8d7da,stroke:#c62828,color:#7f0000")
+    lines.append("  classDef tie fill:#e2e3e5,stroke:#6c757d,color:#343a40")
+    for outcome, ids in classed.items():
+        if ids:
+            lines.append(f'  class {",".join(ids)} {outcome}')
 
     lines.append("```")
     return "\n".join(lines)
