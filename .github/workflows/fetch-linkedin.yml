@@ -38,27 +38,61 @@ jobs:
           LISTENER_SHARED_SECRET: ${{ secrets.LISTENER_SHARED_SECRET }}
         run: python3 .github/scripts/fetch_linkedin_cache.py
 
-      - name: Refresh subtype values from feedback
-        # Repo-only (no Mac mini needed): win/tie/lost totals from
-        # COULD/TABLE-2026Q3.csv onto CAN/TREE-2026Q3.json, so step 2 starts
-        # from fresh values. Idempotent; step 2 re-runs it before generating.
-        run: python3 .github/scripts/update_tree_values.py
-
       - name: Commit updated cache files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -- 'MAY/*-2026Q3.log' CAN/TREE-2026Q3.json
+          git add -- 'MAY/*-2026Q3.log'
           if git diff --cached --quiet; then
             echo "No cache changes this run — nothing to commit."
             exit 0
           fi
-          git commit -m "chore(step-1): weekly linkedin snapshot and subtype values update"
+          git commit -m "chore(linkedin-cache): weekly fetch-linkedin snapshot update"
           # Retry with rebase on a rejected push -- confirmed this
           # happens for real: a run's entire fetched batch was lost
           # once already when an unrelated commit landed on main
           # while this ~6-minute job was still running, and the bare
           # `git push` here had no fallback.
+          for attempt in 1 2 3 4 5; do
+            if git push; then
+              exit 0
+            fi
+            echo "Push rejected (attempt $attempt) -- rebasing onto origin/main and retrying..."
+            git fetch origin main
+            git rebase origin/main
+          done
+          echo "::error::git push failed after 5 attempts"
+          exit 1
+
+  # Step 1b: win/tie/lost totals from COULD/TABLE-2026Q3.csv onto
+  # CAN/TREE-2026Q3.json. Repo-only (no Mac mini). Own job so it gets a fresh
+  # checkout (including 1a's push and any feedback that landed during the
+  # ~6-minute fetch) and its own commit. Runs even if 1a failed. Step 2 re-runs
+  # the same idempotent script right before generating.
+  refresh-values:
+    needs: fetch
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Refresh subtype values from feedback
+        run: python3 .github/scripts/update_tree_values.py
+
+      - name: Commit updated tree
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -- CAN/TREE-2026Q3.json
+          if git diff --cached --quiet; then
+            echo "No value changes this run — nothing to commit."
+            exit 0
+          fi
+          git commit -m "chore(step-1b): refresh subtype values from feedback"
           for attempt in 1 2 3 4 5; do
             if git push; then
               exit 0

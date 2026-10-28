@@ -53,6 +53,19 @@ steps:
         # One JSON entry per slug appended below the anchor in MAY/<SLUG>-2026Q3.log.
         # Do not tag a connection whose recentPosts[] is empty or stale.
 
+      - id: 1b
+        name: refresh-values
+        script: .github/scripts/update_tree_values.py
+        # Repo-only job after 1a in fetch-linkedin.yml (no Mac mini needed).
+        # Writes reviewer feedback onto every subtype in the tree:
+        #   value = wins - losses (win +1, tie 0, lost -1), rated = posts counted.
+        # Step 2 re-runs it just before generating; generate-post uses it as a
+        # tiebreaker between otherwise equal unused subtypes.
+        reads:
+          - COULD/TABLE-2026Q3.csv
+        writes:
+          - CAN/TREE-2026Q3.json
+
   - id: step-2
     name: generate-content
     # Automated — GitHub Action runs every Tuesday.
