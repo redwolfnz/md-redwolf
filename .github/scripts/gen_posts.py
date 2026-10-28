@@ -232,6 +232,12 @@ def append_posts(
 def main() -> None:
     week = week_num()
     fieldnames, existing_rows = load_csv()
+    if os.environ.get("CONTENT_REPLACE") == "true":
+        # Redo a batch: drop that week's rows first so the new posts reuse
+        # the same item numbers and their subtypes count as unused again.
+        kept = [r for r in existing_rows if r.get("week") != str(week)]
+        print(f"Replacing week {week}: dropping {len(existing_rows) - len(kept)} existing rows")
+        existing_rows = kept
     tree = json.loads(Path(TREE_PATH).read_text(encoding="utf-8"))
 
     payload = build_payload(week, existing_rows, tree)

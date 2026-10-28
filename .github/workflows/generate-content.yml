@@ -19,6 +19,10 @@ on:
       week:
         description: 'ISO week number (leave blank to use current week)'
         required: false
+      replace:
+        description: 'Replace that week''s existing rows (redo a batch) instead of appending; uses a -redo- branch'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -49,11 +53,20 @@ jobs:
             echo "num=$(python3 -c 'from datetime import date; print(date.today().isocalendar()[1])')" >> $GITHUB_OUTPUT
           fi
 
+      - name: Compute branch name
+        id: branch
+        run: |
+          NAME="content/w${{ steps.week.outputs.num }}-batch"
+          if [ "${{ github.event.inputs.replace }}" = "true" ]; then
+            NAME="$NAME-redo-${{ github.run_number }}"
+          fi
+          echo "name=$NAME" >> $GITHUB_OUTPUT
+
       - name: Create content branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -b content/w${{ steps.week.outputs.num }}-batch
+          git checkout -b ${{ steps.branch.outputs.name }}
 
       - name: Generate posts via Mac mini
         env:
@@ -62,6 +75,7 @@ jobs:
           CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
           LISTENER_SHARED_SECRET: ${{ secrets.LISTENER_SHARED_SECRET }}
           CONTENT_WEEK: ${{ steps.week.outputs.num }}
+          CONTENT_REPLACE: ${{ github.event.inputs.replace }}
         run: python3 .github/scripts/gen_posts.py
 
       - name: Commit generated posts
@@ -80,12 +94,12 @@ jobs:
           git add COULD/TABLE-2026Q3.csv
           git commit -m "content(w${WEEK}): generate week ${WEEK} batch — ${RANGE}"
           for attempt in 1 2 3; do
-            if git push origin content/w${WEEK}-batch; then
+            if git push origin ${{ steps.branch.outputs.name }}; then
               break
             fi
             echo "Push rejected (attempt $attempt) — retrying..."
-            git fetch origin content/w${WEEK}-batch 2>/dev/null || true
-            git rebase origin/content/w${WEEK}-batch 2>/dev/null || true
+            git fetch origin ${{ steps.branch.outputs.name }} 2>/dev/null || true
+            git rebase origin/${{ steps.branch.outputs.name }} 2>/dev/null || true
           done
 
       - name: Generate PR body
@@ -100,4 +114,4 @@ jobs:
             --title "content(w${WEEK}): week ${WEEK} batch" \
             --body-file /tmp/pr_body.md \
             --base main \
-            --head content/w${WEEK}-batch
+            --head ${{ steps.branch.outputs.name }}
