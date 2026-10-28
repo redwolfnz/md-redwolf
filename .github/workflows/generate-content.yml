@@ -2,8 +2,9 @@ name: Generate weekly content
 
 # Step 2 of the pipeline (PIPE-2026Q3.yml).
 # Calls the Mac mini listener (via Cloudflare Tunnel) which runs gen_posts.py
-# and returns 6 generated posts as JSON. This Action appends them to the CSV,
-# commits on a content branch, and opens a PR.
+# and returns 6 generated posts as JSON. This Action appends them to the CSV
+# and commits straight to main: no content branch, no PR, no human merge
+# step. The review UI is where posts get accepted or rejected afterwards.
 #
 # Requires repo secrets:
 #   GENERATE_CONTENT_URL    — Cloudflare Tunnel URL for the /generate-content endpoint
@@ -20,13 +21,12 @@ on:
         description: 'ISO week number (leave blank to use current week)'
         required: false
       replace:
-        description: 'Replace that week''s existing rows (redo a batch) instead of appending; uses a -redo- branch'
+        description: 'Replace that week''s existing rows (redo a batch) instead of appending'
         type: boolean
         default: false
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   generate:
@@ -34,15 +34,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install requests pyyaml
+        run: pip install requests
 
       - name: Compute week number
         id: week
@@ -52,21 +50,6 @@ jobs:
           else
             echo "num=$(python3 -c 'from datetime import date; print(date.today().isocalendar()[1])')" >> $GITHUB_OUTPUT
           fi
-
-      - name: Compute branch name
-        id: branch
-        run: |
-          NAME="content/w${{ steps.week.outputs.num }}-batch"
-          if [ "${{ github.event.inputs.replace }}" = "true" ]; then
-            NAME="$NAME-redo-${{ github.run_number }}"
-          fi
-          echo "name=$NAME" >> $GITHUB_OUTPUT
-
-      - name: Create content branch
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -b ${{ steps.branch.outputs.name }}
 
       - name: Generate posts via Mac mini
         env:
@@ -78,7 +61,7 @@ jobs:
           CONTENT_REPLACE: ${{ github.event.inputs.replace }}
         run: python3 .github/scripts/gen_posts.py
 
-      - name: Commit generated posts
+      - name: Commit and push to main
         run: |
           WEEK=${{ steps.week.outputs.num }}
           RANGE=$(python3 -c "
@@ -91,27 +74,23 @@ jobs:
           else:
               print('no posts')
           ")
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add COULD/TABLE-2026Q3.csv
+          if git diff --cached --quiet; then
+            echo "No CSV changes — nothing to commit."
+            exit 0
+          fi
           git commit -m "content(w${WEEK}): generate week ${WEEK} batch — ${RANGE}"
-          for attempt in 1 2 3; do
-            if git push origin ${{ steps.branch.outputs.name }}; then
-              break
+          # main also receives feedback and cache commits while this runs,
+          # so retry with a rebase on a rejected push.
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              exit 0
             fi
-            echo "Push rejected (attempt $attempt) — retrying..."
-            git fetch origin ${{ steps.branch.outputs.name }} 2>/dev/null || true
-            git rebase origin/${{ steps.branch.outputs.name }} 2>/dev/null || true
+            echo "Push rejected (attempt $attempt) — rebasing onto origin/main and retrying..."
+            git fetch origin main
+            git rebase origin/main
           done
-
-      - name: Generate PR body
-        run: python3 .github/scripts/gen_pr_body.py ${{ steps.week.outputs.num }} > /tmp/pr_body.md
-
-      - name: Open PR
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          WEEK=${{ steps.week.outputs.num }}
-          gh pr create \
-            --title "content(w${WEEK}): week ${WEEK} batch" \
-            --body-file /tmp/pr_body.md \
-            --base main \
-            --head ${{ steps.branch.outputs.name }}
+          echo "::error::git push failed after 5 attempts"
+          exit 1
