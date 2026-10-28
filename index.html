@@ -175,6 +175,13 @@ const TOKEN  = "__REVIEW_PAT__".startsWith("__") ? (window.__MD_REDWOLF__ || "")
 const CSV_PATH = `COULD/TABLE-2026Q3.csv`;
 const CSV_URL  = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/${CSV_PATH}`;
 
+// Header names, with stray \r stripped exactly as parseCSV strips them. Without
+// this a header like "sources\r\r" keeps its CRs here but not in the row keys,
+// so serializeCSV looks up a key that does not exist and blanks the column.
+function parseHeaders(text) {
+  return text.trim().split("\n")[0].replace(/\r/g, "").replace(/"/g, "").split(",");
+}
+
 function parseCSV(text) {
   const lines = text.trim().replace(/\r/g, "").split("\n");
   const headers = lines[0].replace(/"/g, "").split(",");
@@ -231,13 +238,29 @@ async function submitFeedback(postId, result, comment, btn, statusEl, allBtns, c
   statusEl.textContent = "Saving…";
   statusEl.className = "status";
   try {
-    const row = csvRows.find(r => r.item === postId);
-    if (row) { row.feedback = result; row["feedback-comment"] = comment; }
-    const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${CSV_PATH}`, {
-      method: "PUT",
-      headers: { "Authorization": `Bearer ${TOKEN}`, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
-      body: JSON.stringify({ message: `feedback: ${postId} -> ${result || "cleared"}`, content: toBase64(serializeCSV(csvRows, csvHeaders)), sha: csvSha })
-    });
+    const applyChange = () => {
+      const row = csvRows.find(r => r.item === postId);
+      if (row) { row.feedback = result; row["feedback-comment"] = comment; }
+      return !!row;
+    };
+    applyChange();
+    let res;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${CSV_PATH}`, {
+        method: "PUT",
+        headers: { "Authorization": `Bearer ${TOKEN}`, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
+        body: JSON.stringify({ message: `feedback: ${postId} -> ${result || "cleared"}`, content: toBase64(serializeCSV(csvRows, csvHeaders)), sha: csvSha })
+      });
+      if (res.status !== 409) break;
+      // 409: the CSV changed on main after this page loaded (a bot, or someone
+      // else's commit). Refetch the fresh file (this also refreshes csvSha),
+      // reapply only this one change to it, and retry. Never resend the old
+      // rows: that would overwrite the other writer's edits.
+      const fresh = await fetchCSV();
+      csvHeaders = parseHeaders(fresh);
+      csvRows    = parseCSV(fresh);
+      if (!applyChange()) throw new Error(`${postId} is no longer in the CSV`);
+    }
     if (res.status === 200 || res.status === 201) {
       const json = await res.json();
       csvSha = json.content.sha;
@@ -286,7 +309,7 @@ async function fetchCSV() {
 
 async function load() {
   const text = await fetchCSV();
-  csvHeaders = text.trim().split("\n")[0].replace(/"/g, "").split(",");
+  csvHeaders = parseHeaders(text);
   csvRows    = parseCSV(text);
   const rows = csvRows;
 
