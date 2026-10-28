@@ -57,8 +57,11 @@ steps:
         name: refresh-values
         script: .github/scripts/update_tree_values.py
         # Repo-only job after 1a in fetch-linkedin.yml (no Mac mini needed).
-        # Writes reviewer feedback onto every subtype in the tree:
-        #   value = wins - losses (win +1, tie 0, lost -1), rated = posts counted.
+        # One rule, two targets: value = wins - losses (win +1, tie 0, lost -1).
+        #   - every subtype in the tree gets "value" from its rated posts
+        #   - every connection (own/associations/partners) gets a value in
+        #     the tree's "connectionsValue", credited from rated posts whose
+        #     "sources" column cites it
         # Step 2 re-runs it just before generating; generate-post uses it as a
         # tiebreaker between otherwise equal unused subtypes.
         reads:
