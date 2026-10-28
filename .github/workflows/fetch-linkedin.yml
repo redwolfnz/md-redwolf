@@ -38,16 +38,22 @@ jobs:
           LISTENER_SHARED_SECRET: ${{ secrets.LISTENER_SHARED_SECRET }}
         run: python3 .github/scripts/fetch_linkedin_cache.py
 
+      - name: Refresh subtype values from feedback
+        # Repo-only (no Mac mini needed): win/tie/lost totals from
+        # COULD/TABLE-2026Q3.csv onto CAN/TREE-2026Q3.json, so step 2 starts
+        # from fresh values. Idempotent; step 2 re-runs it before generating.
+        run: python3 .github/scripts/update_tree_values.py
+
       - name: Commit updated cache files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -- 'MAY/*-2026Q3.log'
+          git add -- 'MAY/*-2026Q3.log' CAN/TREE-2026Q3.json
           if git diff --cached --quiet; then
             echo "No cache changes this run — nothing to commit."
             exit 0
           fi
-          git commit -m "chore(linkedin-cache): weekly fetch-linkedin snapshot update"
+          git commit -m "chore(step-1): weekly linkedin snapshot and subtype values update"
           # Retry with rebase on a rejected push -- confirmed this
           # happens for real: a run's entire fetched batch was lost
           # once already when an unrelated commit landed on main
