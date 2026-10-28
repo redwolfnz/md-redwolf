@@ -47,10 +47,10 @@ steps:
         reads:
           - CAN/TREE-2026Q3.json
         writes:
-          - MAY/LOG-FETCH-2026Q3.log
+          - MAY/LOG-2026Q3.log
         # Calls py-redwolf/listener.py (Mac mini) via Cloudflare Tunnel.
         # Playwright + saved LinkedIn session scrapes each connection page.
-        # One JSON entry per slug per run, newest first, below the anchor in the single MAY/LOG-FETCH-2026Q3.log.
+        # One JSON entry per slug per run, newest first, below the anchor in the single MAY/LOG-2026Q3.log.
         # Do not tag a connection whose recentPosts[] is empty or stale.
 
       - id: 1b
@@ -82,7 +82,7 @@ steps:
     skill: .claude/skills/generate-post/SKILL.md
     reads:
       - CAN/TREE-2026Q3.json
-      - MAY/LOG-FETCH-2026Q3.log
+      - MAY/LOG-2026Q3.log
       - COULD/TABLE-2026Q3.csv       # for used-subtypes dedup
     writes:
       - COULD/TABLE-2026Q3.csv
@@ -160,7 +160,7 @@ scoring:
 # ── KEY FILES ───────────────────────────────────────────────────────────────
 key_files:
   CAN/TREE-2026Q3.json:                content strategy skeleton
-  MAY/LOG-FETCH-2026Q3.log:          LinkedIn fetch history for all connections — newest entry first (written by fetch-linkedin.yml)
+  MAY/LOG-2026Q3.log:          LinkedIn fetch history for all connections — newest entry first (written by fetch-linkedin.yml)
   COULD/TABLE-2026Q3.csv:                all posts, all weeks
   MAY/media/2026Q3/:                 post media files
   MIGHT/ASSET-2026Q3.md:               asset log (status, verify notes)

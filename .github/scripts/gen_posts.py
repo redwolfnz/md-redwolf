@@ -50,7 +50,7 @@ def week_num() -> int:
 
 def parse_latest_log_entry(slug: str) -> dict | None:
     """Newest entry for this connection in the single fetch log (newest first)."""
-    log = LOG_DIR / f"LOG-FETCH-{QUARTER}.log"
+    log = LOG_DIR / f"LOG-{QUARTER}.log"
     if not log.exists():
         return None
     text = log.read_text(encoding="utf-8")

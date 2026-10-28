@@ -58,7 +58,7 @@ def mermaid_block() -> str:
 
 def _parse_latest_entry(slug: str) -> dict | None:
     """Newest entry for this connection in the single fetch log (newest first)."""
-    log_path = Path(f"MAY/LOG-FETCH-{QUARTER}.log")
+    log_path = Path(f"MAY/LOG-{QUARTER}.log")
     if not log_path.exists():
         return None
     text = log_path.read_text(encoding="utf-8")
@@ -74,7 +74,7 @@ def _parse_latest_entry(slug: str) -> dict | None:
 
 
 def connection_activity(week: int) -> str:
-    """Return posts from MAY/LOG-FETCH-*.log within the last 7 days (rolling window).
+    """Return posts from MAY/LOG-*.log within the last 7 days (rolling window).
 
     Anchored to today so the section is fairly labelled as this week's signals
     regardless of where the ISO week boundary falls.

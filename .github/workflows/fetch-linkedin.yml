@@ -3,7 +3,7 @@ name: fetch-linkedin
 # Weekly cache refresh for STEP 1a (see README.md and
 # MIGHT/ASSET-2026Q3.md). Calls py-redwolf's listener (over Cloudflare
 # Tunnel + Access) once per connection and commits the results to the
-# single MAY/LOG-FETCH-2026Q3.log. A connection that fails or times out is
+# single MAY/LOG-2026Q3.log. A connection that fails or times out is
 # skipped, not treated as a job failure — the fetch-linkedin skill
 # already handles a missing log entry as MISSING.
 #
@@ -48,7 +48,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -- 'MAY/LOG-FETCH-2026Q3.log'
+          git add -- 'MAY/LOG-2026Q3.log'
           if git diff --cached --quiet; then
             echo "No cache changes this run — nothing to commit."
             exit 0

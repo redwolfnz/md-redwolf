@@ -7,7 +7,7 @@ Reads CAN/TREE-2026Q3.json's connections{}, maps each to its fixed slug
 sync if connections{} ever changes), and calls py-redwolf's listener
 once per connection, sequentially with a pause between calls, prepending
 each successful response as a new dated entry at the top of the single
-MAY/LOG-FETCH-2026Q3.log (one `## <fetchedAt> <SLUG>` entry per connection per run).
+MAY/LOG-2026Q3.log (one `## <fetchedAt> <SLUG>` entry per connection per run).
 
 A failed/unreachable call for one connection is logged and skipped —
 it never fails the whole job, and never touches that connection's
@@ -33,7 +33,7 @@ TREE_FILE = REPO_ROOT / "CAN" / f"TREE-{QUARTER}.json"
 SECONDS_BETWEEN_CALLS = 30
 REQUEST_TIMEOUT = 90
 ANCHOR = "####### <!-- ANCHOR MARKER - ADD ALL NEW ENTRIES DIRECTLY BELOW THIS LINE -->"
-LOG_PATH = REPO_ROOT / "MAY" / f"LOG-FETCH-{QUARTER}.log"
+LOG_PATH = REPO_ROOT / "MAY" / f"LOG-{QUARTER}.log"
 
 # Must match .claude/skills/fetch-linkedin/SKILL.md's mapping table.
 SLUG_MAP = {
