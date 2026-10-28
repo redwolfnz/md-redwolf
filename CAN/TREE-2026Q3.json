@@ -23,6 +23,24 @@
       "Jacques Technologies": "https://www.linkedin.com/company/jacques"
     }
   },
+  "connectionsUsed": {
+    "own": {
+      "Red Wolf High Level Security Ltd": 0
+    },
+    "associations": {
+      "New Zealand Security Association (NZSA)": 0,
+      "ASIS International": 0,
+      "NZ Police": 0
+    },
+    "partners": {
+      "Johnson Controls": 0,
+      "Gallagher Security": 0,
+      "Inner Range ANZ": 0,
+      "Bosch Security and Safety Systems": 0,
+      "Integrated Control Technology (ICT)": 0,
+      "Jacques Technologies": 0
+    }
+  },
   "tree": [
     {
       "category": "SERVICES",

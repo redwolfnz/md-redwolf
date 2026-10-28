@@ -71,7 +71,7 @@ For each pillar:
 - 6: Useful but not tightly tied to Red Wolf or a specific event
 - 1–5: Too generic, no NZ angle, or filler — avoid
 
-**`sources`** — one short line naming what connection activity or data informed this angle (e.g. `ASIS International post 2026-10-25`, `NZSA announcement re staff transitions`). Empty string if written from first principles with no specific source.
+**`sources`** — one short line naming what connection activity or data informed this angle (e.g. `ASIS International post 2026-10-25`, `NZSA announcement re staff transitions`). Empty string if written from first principles with no specific source. Name each connection by its full name from `connections` (or its slug, e.g. `NZSA`): step 1b counts these mentions per connection to track which connections get used.
 
 ## Rules
 
