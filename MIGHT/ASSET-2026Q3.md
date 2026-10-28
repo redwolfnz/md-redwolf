@@ -2,6 +2,14 @@ ASSET LOG
 
 ####### <!-- ANCHOR MARKER - ADD ALL NEW ASSET ENTRIES DIRECTLY BELOW THIS LINE -->
 
+## ASSET:redwolf 2026-10-28 -> generate-content: first e2e run via listener; TODO adjust workflow to push to main
+
+**Done:** `GENERATE_CONTENT_URL` repo secret set to the tunnel base URL (`https://redwolf.toigroup.co.nz`, no path; `gen_posts.py` appends `/generate-content`). Direct POST of a real payload to the live listener returned 6 valid posts in 98s (`validate_posts()` passed, no repeated subtypes). First workflow_dispatch run on `main`: run 40615215955.
+
+**TODO (decision: push to main):** `generate-content.yml` currently creates `content/w<NN>-batch`, pushes it, and opens a PR into `main`. Adjust it to commit the generated rows to `COULD/TABLE-2026Q3.csv` directly on `main` instead, removing the branch creation, the PR body step and the `gh pr create` step. Reuse the push-with-rebase-retry block from `fetch-linkedin.yml` (concurrent bot commits to `main` are expected: feedback and cache refreshes). Note this drops the human review gate the PR gave; confirm that is intended before changing.
+
+**Observed:** `CF_ACCESS_CLIENT_ID` / `CF_ACCESS_CLIENT_SECRET` are not set as secrets and the tunnel host answers the listener's own 404, so Cloudflare Access does not appear to be enforcing; `LISTENER_SHARED_SECRET` is the only auth in front of the listener. Generation took 98s against a 170s listener timeout and the Action's 180s client timeout.
+
 ## ASSET:redwolf 2026-10-28 -> generate-content listener built on the Mac mini; mirrors fetch-linkedin, runs `claude -p`
 
 Closes the "Pending on Mac mini" item from the entry below. Supersedes its "key stored locally" assumption: no Anthropic API key is used.

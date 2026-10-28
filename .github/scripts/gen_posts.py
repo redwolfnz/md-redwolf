@@ -89,8 +89,12 @@ def load_connections(window_start: date, window_end: date) -> list[dict]:
 def load_csv() -> tuple[list[str], list[dict]]:
     with open(TABLE_PATH, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
-        fieldnames = list(reader.fieldnames)
-        rows = list(reader)
+        # The committed header's last column has been read back as
+        # "sources\r\r" (stray CRs inside the quotes), which made
+        # append_posts' "sources" key fail DictWriter. Strip header names so
+        # the rewrite below also repairs the header.
+        fieldnames = [h.strip() for h in reader.fieldnames]
+        rows = [{(k or "").strip(): v for k, v in r.items()} for r in reader]
     return fieldnames, rows
 
 
