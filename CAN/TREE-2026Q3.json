@@ -7,10 +7,10 @@
   },
   "connections": {
     "own": {
-      "Red Wolf High Level Security Ltd": { "url": "https://www.linkedin.com/company/red-wolf-high-level-security-ltd", "value": 0 }
+      "Red Wolf High Level Security Ltd": { "url": "https://www.linkedin.com/company/red-wolf-high-level-security-ltd", "value": 3 }
     },
     "associations": {
-      "New Zealand Security Association (NZSA)": { "url": "https://www.linkedin.com/company/new-zealand-security-association", "value": 0 },
+      "New Zealand Security Association (NZSA)": { "url": "https://www.linkedin.com/company/new-zealand-security-association", "value": 1 },
       "ASIS International": { "url": "https://www.linkedin.com/company/asis-international", "value": 0 },
       "NZ Police": { "url": "https://www.linkedin.com/company/nz-police", "value": 0 }
     },

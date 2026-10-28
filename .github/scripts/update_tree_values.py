@@ -8,8 +8,9 @@ One rule, applied to both sides of every rated post:
   - subtypes: each rated post credits the subtype named by its
     topic / type / subtopic (== tree category / type / subtype name).
     Written as "value" on the one-line subtype objects.
-  - connections: each rated post credits every connection cited in its
-    free-text "sources" column (own / associations / partners). Each entry in
+  - connections: each rated post credits every connection named in its
+    free-text "sources" column or tagged in its "linkedin account tag" column
+    (own / associations / partners). Each entry in
     connections{} is { "url": ..., "value": N }.
 
 Counts come from COULD/TABLE-<quarter>.csv. Unrated posts count for nothing.
@@ -61,15 +62,19 @@ CONN_RE = re.compile(r'^(\s+)("(?:[^"\\]|\\.)*"):\s*(.+?)(,?)\s*$')
 
 
 def load_rated_rows() -> list:
-    """Rows with a win/tie/lost verdict: [(score, topic, type, subtopic, sources)]."""
+    """Rows with a win/tie/lost verdict: [(score, topic, type, subtopic, cited text)]."""
     rows = []
     with open(TABLE_PATH, newline="", encoding="utf-8") as f:
         for row in csv.DictReader(f):
             row = {(k or "").strip(): v for k, v in row.items()}
             verdict = (row.get("feedback") or "").strip().lower()
             if verdict in SCORES:
+                # A connection is credited if the post cites it in "sources" or
+                # tags it in "linkedin account tag" (the latter is filled on
+                # every post; the own page is tagged on all of them).
+                cited = f'{row.get("sources") or ""} {row.get("linkedin account tag") or ""}'
                 rows.append((SCORES[verdict], row["topic"], row["type"],
-                             row["subtopic"], row.get("sources") or ""))
+                             row["subtopic"], cited))
     return rows
 
 

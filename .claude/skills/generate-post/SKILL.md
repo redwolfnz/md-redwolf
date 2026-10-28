@@ -17,7 +17,7 @@ You receive a JSON object with:
 - `window` — the 7-day window for connection activity (e.g. `2026-10-21 to 2026-10-28`)
 - `nextItemStart` — integer to start post numbering from (informational only)
 - `usedSubtypes` — list of `{topic, type, subtopic}` objects already used this quarter (do not repeat any)
-- `tree` — full TREE JSON (pillars → types → subtypes with descriptions). Each subtype also carries `value` (reviewer feedback: wins minus losses, win +1, tie 0, lost −1), and so does each entry in `connections` (own / associations / partners: `{ "url", "value" }`), credited from the `sources` of rated posts
+- `tree` — full TREE JSON (pillars → types → subtypes with descriptions). Each subtype also carries `value` (reviewer feedback: wins minus losses, win +1, tie 0, lost −1), and so does each entry in `connections` (own / associations / partners: `{ "url", "value" }`), credited from the `sources` and `linkedin account tag` of rated posts
 - `connections` — per-connection snapshot: `slug`, `companyName`, `bio`, `fetchedAt`, `recentPosts` filtered to the window
 
 ## Your task
