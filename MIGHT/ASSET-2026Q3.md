@@ -2,6 +2,16 @@ ASSET LOG
 
 ####### <!-- ANCHOR MARKER - ADD ALL NEW ASSET ENTRIES DIRECTLY BELOW THIS LINE -->
 
+## ASSET:redwolf 2026-10-29 21:10 -> post-012 poll results graphic (real LinkedIn results)
+
+**Media:** https://redwolfnz.github.io/md-redwolf/MAY/media/2026Q3/post-012-poll-results.png — 1080x1080, per the post-012 brief ("You voted. Here are the results.").
+
+**Data (LinkedIn poll from post-006, as supplied by the client 2026-10-29):** No security assessment 69% · Outdated CCTV 19% · Weak access control 13% (LinkedIn rounding; sums to 101%). The live poll had 3 options — "No 24/7 monitoring" from the post-006 graphic was not one of them.
+
+**Commentary on graphic:** "Nearly 7 in 10 of you picked no security assessment. You can't fix the gaps you haven't found." Worded as what voters chose, not as a claim that 69% of organisations have never had an assessment.
+
+**Verify before publishing:** total vote count not shown — add it to the post copy if you want to (small samples should not be presented as representative research).
+
 ## ASSET:redwolf 2026-10-28 -> generate-content: first e2e run via listener; TODO adjust workflow to push to main
 
 **Done:** `GENERATE_CONTENT_URL` repo secret set to the tunnel base URL (`https://redwolf.toigroup.co.nz`, no path; `gen_posts.py` appends `/generate-content`). Direct POST of a real payload to the live listener returned 6 valid posts in 98s (`validate_posts()` passed, no repeated subtypes). First workflow_dispatch run on `main`: run 40615215955.
