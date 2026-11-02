@@ -97,7 +97,10 @@ def call_mac_mini_one(post: dict, system_prompt: str, logob64: str, week: int) -
     print(f"  {post['item']} job {job_id} — polling (deadline {max_calls*450+300}s) …")
     while time.time() < deadline:
         time.sleep(15)
-        r     = requests.get(status_url, headers=poll_hdrs, timeout=30)
+        r = requests.get(status_url, headers=poll_hdrs, timeout=30)
+        if r.status_code == 404:
+            print(f"  {post['item']} job lost (listener restarted?) — skipping")
+            return []
         r.raise_for_status()
         state = r.json()
         if state["status"] == "done":
