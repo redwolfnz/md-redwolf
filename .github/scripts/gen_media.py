@@ -22,6 +22,7 @@ import csv
 import io
 import json
 import os
+import time
 import requests
 from datetime import date
 from pathlib import Path
@@ -57,28 +58,56 @@ def load_system_prompt() -> str:
 
 
 
-def call_mac_mini_one(post: dict, system_prompt: str, logob64: str, week: int) -> list[dict]:
-    """Call /generate-media for a single post — keeps each request under
-    Cloudflare's 100s proxy timeout. Returns the list of files for that post."""
-    url = os.environ["GENERATE_CONTENT_URL"].rstrip("/") + "/generate-media"
-    headers = {
-        "X-Listener-Secret": os.environ["LISTENER_SHARED_SECRET"],
-        "Content-Type":      "application/json",
+def _cf_headers() -> dict:
+    """CF Access + listener auth headers for every Mac mini call."""
+    return {
+        "CF-Access-Client-Id":     os.environ.get("CF_ACCESS_CLIENT_ID", ""),
+        "CF-Access-Client-Secret": os.environ.get("CF_ACCESS_CLIENT_SECRET", ""),
+        "X-Listener-Secret":       os.environ["LISTENER_SHARED_SECRET"],
     }
-    payload = {
+
+
+def call_mac_mini_one(post: dict, system_prompt: str, logob64: str, week: int) -> list[dict]:
+    """POST /generate-media for one post (returns job_id immediately — async),
+    then poll /generate-media-status/<job_id> until done or 6-minute timeout."""
+    base_url = os.environ["GENERATE_CONTENT_URL"].rstrip("/")
+    headers  = {**_cf_headers(), "Content-Type": "application/json"}
+    payload  = {
         "systemPrompt": system_prompt,
         "logob64":      logob64,
         "week":         week,
         "posts":        [post],
     }
-    print(f"  {post['item']} → {url} …")
-    resp = requests.post(url, headers=headers, json=payload, timeout=300)
+    print(f"  {post['item']} → {base_url}/generate-media …")
+    resp = requests.post(base_url + "/generate-media", headers=headers, json=payload, timeout=30)
     resp.raise_for_status()
     data = resp.json()
     if "error" in data:
-        print(f"  {post['item']} Mac mini error: {data['error']}")
+        print(f"  {post['item']} error: {data['error']}")
         return []
-    return data.get("files", [])
+
+    job_id     = data["job_id"]
+    status_url = f"{base_url}/generate-media-status/{job_id}"
+    poll_hdrs  = _cf_headers()
+    deadline   = time.time() + 360  # 6 minutes per post
+
+    print(f"  {post['item']} job {job_id} — polling …")
+    while time.time() < deadline:
+        time.sleep(15)
+        r     = requests.get(status_url, headers=poll_hdrs, timeout=30)
+        r.raise_for_status()
+        state = r.json()
+        if state["status"] == "done":
+            files = state.get("files", [])
+            print(f"  {post['item']} done ({len(files)} file(s))")
+            return files
+        if state["status"] == "error":
+            print(f"  {post['item']} Mac mini error: {state.get('error', 'unknown')}")
+            return []
+        print(f"  {post['item']} pending …")
+
+    print(f"  {post['item']} timed out after 360s")
+    return []
 
 
 def main() -> None:
