@@ -56,27 +56,29 @@ def load_system_prompt() -> str:
     return text.strip()
 
 
-def build_payload(week: int, posts: list[dict]) -> dict:
-    return {
-        "systemPrompt": load_system_prompt(),
-        "logob64":      base64.b64encode(LOGO_PATH.read_bytes()).decode(),
-        "week":         week,
-        "posts":        posts,
-    }
 
-
-def call_mac_mini(payload: dict) -> dict:
+def call_mac_mini_one(post: dict, system_prompt: str, logob64: str, week: int) -> list[dict]:
+    """Call /generate-media for a single post — keeps each request under
+    Cloudflare's 100s proxy timeout. Returns the list of files for that post."""
     url = os.environ["GENERATE_CONTENT_URL"].rstrip("/") + "/generate-media"
     headers = {
-        "CF-Access-Client-Id":     os.environ["CF_ACCESS_CLIENT_ID"],
-        "CF-Access-Client-Secret": os.environ["CF_ACCESS_CLIENT_SECRET"],
-        "X-Listener-Secret":       os.environ["LISTENER_SHARED_SECRET"],
-        "Content-Type":            "application/json",
+        "X-Listener-Secret": os.environ["LISTENER_SHARED_SECRET"],
+        "Content-Type":      "application/json",
     }
-    print(f"Calling Mac mini at {url} …")
-    resp = requests.post(url, headers=headers, json=payload, timeout=700)
+    payload = {
+        "systemPrompt": system_prompt,
+        "logob64":      logob64,
+        "week":         week,
+        "posts":        [post],
+    }
+    print(f"  {post['item']} → {url} …")
+    resp = requests.post(url, headers=headers, json=payload, timeout=95)
     resp.raise_for_status()
-    return resp.json()
+    data = resp.json()
+    if "error" in data:
+        print(f"  {post['item']} Mac mini error: {data['error']}")
+        return []
+    return data.get("files", [])
 
 
 def main() -> None:
@@ -105,36 +107,34 @@ def main() -> None:
         print(f"No generatable posts with empty media URL for week {week}.")
         return
 
-    print(f"Generating media for {len(targets)} post(s) (week {week}):")
+    print(f"Generating media for {len(targets)} post(s) (week {week}) — one call per post:")
     for t in targets:
         print(f"  {t['item']} | {t['media-type']} | {t['media'][:60]}")
 
-    payload = build_payload(week, targets)
-    data    = call_mac_mini(payload)
+    system_prompt = load_system_prompt()
+    logob64       = base64.b64encode(LOGO_PATH.read_bytes()).decode()
 
-    if "error" in data:
-        raise RuntimeError(f"Mac mini returned error: {data['error']}")
+    all_files: list[dict] = []
+    for post in targets:
+        files = call_mac_mini_one(post, system_prompt, logob64, week)
+        all_files.extend(files)
 
-    files = data.get("files", [])
-    if not files:
-        print("Mac mini returned no files.")
+    if not all_files:
+        print("No files returned from Mac mini.")
         return
 
     MEDIA_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Write files; build item → primary URL map (pdf path takes precedence over slides)
     url_map: dict[str, str] = {}
-    for f in files:
+    for f in all_files:
         out = MEDIA_DIR / Path(f["path"]).name
         out.write_bytes(base64.b64decode(f["content_b64"]))
         print(f"  wrote {out} ({out.stat().st_size // 1024} KB)")
         item = f["item"]
         url  = f"{PAGES_BASE}/{out.name}"
-        # prefer .pdf or .gif over slide PNGs as the primary media URL
         if item not in url_map or out.suffix in (".pdf", ".gif"):
             url_map[item] = url
 
-    # Update CSV
     for row in rows:
         if row.get("item") in url_map:
             row["media URL"] = url_map[row["item"]]
