@@ -11,6 +11,19 @@ REQUIRED FORMAT FOR EACH ASSET ENTRY:
 
 ####### <!-- ANCHOR MARKER - ADD ALL NEW ASSET ENTRIES DIRECTLY BELOW THIS LINE, NEVER DELETE OR EDIT PREVIOUS ASSET ENTRIES-->
 
+## ASSET:redwolf 2026-11-02 16:00 → Step 2D deployed to Mac mini — pip deps installed, code pulled, listener restart pending
+
+**Mac mini pip install (--user, python 3.9.6 system):**
+`cairosvg 2.8.2`, `Pillow 11.3.0`, `img2pdf 0.6.3` installed successfully via `pip3 install --user cairosvg Pillow img2pdf` over SSH.
+
+**py-redwolf pushed and pulled on Mac mini:**
+Commit `e5a304f` — `generate_media.py` (new) + `listener.py` (updated `/generate-media` endpoint, 660s timeout, 8 MB body limit). Mac mini pulled via SSH: fast-forward confirmed.
+
+**md-redwolf pushed and pulled on Mac mini:**
+Commit `001695e` — `.claude/skills/generate-media/SKILL.md`, `.github/scripts/gen_media.py`, `generate-content.yml` (Step 2D job), submodule pointer bump. Mac mini pulled via SSH: confirmed.
+
+**Listener restart still needed:** Mac mini listener.py is running from LaunchAgent `com.redwolf.linkedin-listener`. Must be restarted to pick up the new `/generate-media` endpoint. Command on Mac mini: `launchctl unload ~/Library/LaunchAgents/com.redwolf.linkedin-listener.plist && launchctl load ~/Library/LaunchAgents/com.redwolf.linkedin-listener.plist`
+
 ## ASSET:redwolf 2026-11-02 15:30 → Step 2D generate-media implemented — Mac mini SVG pipeline, no new GitHub secrets
 
 **What was built (5 files):**
