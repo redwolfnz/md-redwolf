@@ -11,6 +11,18 @@ REQUIRED FORMAT FOR EACH ASSET ENTRY:
 
 ####### <!-- ANCHOR MARKER - ADD ALL NEW ASSET ENTRIES DIRECTLY BELOW THIS LINE, NEVER DELETE OR EDIT PREVIOUS ASSET ENTRIES-->
 
+## ASSET:redwolf 2026-11-02 18:01 → generate-media diagnosis — Claude 5-hour usage limit and hidden failures
+
+**Latest workflow result:** [Run 41388233893](https://github.com/redwolfnz/md-redwolf/actions/runs/41388233893) reported success for week 45 but generated only `post-019` (PNG, committed as `b8947dd`). Posts `post-020`, `post-021`, `post-023` (PDF), and `post-024` (GIF) returned zero files. `post-022` (JPG) was intentionally skipped because it requires a real asset. Async submission and status polling worked in this run.
+
+**Confirmed current blocker:** Connected to the Mac mini over SSH and retried `post-020` directly through `generate_media.py`, capturing stdout and stderr. It returned `{"files": []}` with stderr `claude -p exited 1:` and `post-020: 0 file(s) generated`. A minimal direct Claude CLI check then exited 1 with: `You've hit your 5-hour limit · resets 8:30pm (Pacific/Auckland)`. The reported reset is 2026-11-02 20:30 NZDT. This confirms the blocker at diagnosis time; the discarded diagnostics prevent proving the cause of every earlier empty result.
+
+**Why the workflow stays green:** `generate_media.py` logs only stderr when Claude exits nonzero, so the usage-limit message on stdout is hidden. Generation failures become an empty files list; `listener.py` accepts that result as success and discards subprocess stderr on exit 0. `.github/scripts/gen_media.py` also accepts empty results and exits successfully even when requested assets are missing.
+
+**Additional timeout issue:** The Action polls for 360 seconds per post, while the listener allows 660 seconds per subprocess. PDF generation makes five sequential Claude calls and GIF generation makes three, each allowing 270 seconds, so multi-slide/frame assets can exceed both outer deadlines.
+
+**Next actions:** Retry the standalone `generate-media.yml` workflow for week 45 after the reported usage reset; it selects posts with empty media URLs. Surface Claude failure diagnostics, report empty/incomplete output as failure, and align timeouts with the slide/frame workload. No generation code, listener configuration, or deployed service was changed during this diagnosis.
+
 ## ASSET:redwolf 2026-11-02 16:45 → generate-media async pattern — bypasses Cloudflare 100s proxy timeout
 
 **Root cause:** Cloudflare Tunnel's edge proxy enforces a hard 100-second HTTP response timeout (524). A single `claude -p` SVG call takes ~2 minutes, so every POST to `/generate-media` was being cut before the Mac mini responded. This timeout is not configurable on free/Pro/Business plans (Enterprise only).
