@@ -72,7 +72,7 @@ def call_mac_mini_one(post: dict, system_prompt: str, logob64: str, week: int) -
         "posts":        [post],
     }
     print(f"  {post['item']} → {url} …")
-    resp = requests.post(url, headers=headers, json=payload, timeout=95)
+    resp = requests.post(url, headers=headers, json=payload, timeout=300)
     resp.raise_for_status()
     data = resp.json()
     if "error" in data:
