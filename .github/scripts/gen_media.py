@@ -89,9 +89,12 @@ def call_mac_mini_one(post: dict, system_prompt: str, logob64: str, week: int) -
     job_id     = data["job_id"]
     status_url = f"{base_url}/generate-media-status/{job_id}"
     poll_hdrs  = _cf_headers()
-    deadline   = time.time() + 540  # 9 minutes per post (PDF=5×450s worst case)
+    # pdf=5 claude calls, gif=3 — each up to 450s; add 300s headroom
+    mtype    = post.get("media-type", "png").lower()
+    max_calls = 5 if mtype == "pdf" else (3 if mtype == "gif" else 1)
+    deadline  = time.time() + (max_calls * 450) + 300
 
-    print(f"  {post['item']} job {job_id} — polling …")
+    print(f"  {post['item']} job {job_id} — polling (deadline {max_calls*450+300}s) …")
     while time.time() < deadline:
         time.sleep(15)
         r     = requests.get(status_url, headers=poll_hdrs, timeout=30)
@@ -106,7 +109,7 @@ def call_mac_mini_one(post: dict, system_prompt: str, logob64: str, week: int) -
             return []
         print(f"  {post['item']} pending …")
 
-    print(f"  {post['item']} timed out after 360s")
+    print(f"  {post['item']} timed out")
     return []
 
 
