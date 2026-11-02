@@ -11,6 +11,22 @@ REQUIRED FORMAT FOR EACH ASSET ENTRY:
 
 ####### <!-- ANCHOR MARKER - ADD ALL NEW ASSET ENTRIES DIRECTLY BELOW THIS LINE, NEVER DELETE OR EDIT PREVIOUS ASSET ENTRIES-->
 
+## ASSET:redwolf 2026-11-02 16:45 → generate-media async pattern — bypasses Cloudflare 100s proxy timeout
+
+**Root cause:** Cloudflare Tunnel's edge proxy enforces a hard 100-second HTTP response timeout (524). A single `claude -p` SVG call takes ~2 minutes, so every POST to `/generate-media` was being cut before the Mac mini responded. This timeout is not configurable on free/Pro/Business plans (Enterprise only).
+
+**Fix — async job pattern (3 files changed):**
+
+`py-redwolf/listener.py` — POST `/generate-media` now spawns a background thread and returns `{"job_id": "<uuid>"}` (202) in under 1 second. New GET `/generate-media-status/<job_id>` returns `{"status":"pending"}` or `{"status":"done","files":[...]}` — each response is milliseconds, never blocked on `claude -p`. Added `MEDIA_JOBS` dict + `MEDIA_JOBS_LOCK`, `_run_generate_media_thread()`, `_send_json()` helper.
+
+`.github/scripts/gen_media.py` — After POST, extracts `job_id` and polls `/generate-media-status/<job_id>` every 15 seconds (6-minute deadline per post). Also added missing `CF-Access-Client-Id` / `CF-Access-Client-Secret` headers (gen_posts.py had them, gen_media.py did not).
+
+`.github/workflows/generate-media.yml` — New standalone workflow. Triggers just the media job (no content generation) for a given week. Use for retries when generate-content ran OK but generate-media failed.
+
+**Mac mini restarted:** listener PID 6918 after `launchctl unload/load com.redwolf.linkedin-listener`.
+
+**Run under test:** 41384497041 (generate-media.yml, week 45, in progress at time of writing).
+
 ## ASSET:redwolf 2026-11-02 16:00 → Step 2D deployed to Mac mini — pip deps installed, code pulled, listener restart pending
 
 **Mac mini pip install (--user, python 3.9.6 system):**
