@@ -10,7 +10,7 @@
       "Red Wolf High Level Security Ltd": { "url": "https://www.linkedin.com/company/red-wolf-high-level-security-ltd", "value": 0 }
     },
     "associations": {
-      "New Zealand Security Association (NZSA)": { "url": "https://www.linkedin.com/company/new-zealand-security-association", "value": 2 },
+      "New Zealand Security Association (NZSA)": { "url": "https://www.linkedin.com/company/new-zealand-security-association", "value": 3 },
       "ASIS International": { "url": "https://www.linkedin.com/company/asis-international", "value": 0 },
       "NZ Police": { "url": "https://www.linkedin.com/company/nz-police", "value": 0 }
     },
@@ -97,7 +97,7 @@
         {
           "type": "Accreditations & Partnerships",
           "subtypes": [
-            { "name": "NZSA Membership", "description": "Association standards, industry credibility signals", "value": 0 },
+            { "name": "NZSA Membership", "description": "Association standards, industry credibility signals", "value": 1 },
             { "name": "Johnson Controls Partnership", "description": "Enterprise technology capability", "value": 0 },
             { "name": "Supplier Partnerships", "description": "Bosch, Inner Range, Gallagher, ICT product launches and integrations", "value": 0 }
           ]
