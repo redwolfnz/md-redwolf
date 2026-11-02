@@ -89,7 +89,7 @@ def call_mac_mini_one(post: dict, system_prompt: str, logob64: str, week: int) -
     job_id     = data["job_id"]
     status_url = f"{base_url}/generate-media-status/{job_id}"
     poll_hdrs  = _cf_headers()
-    deadline   = time.time() + 360  # 6 minutes per post
+    deadline   = time.time() + 540  # 9 minutes per post (PDF=5×450s worst case)
 
     print(f"  {post['item']} job {job_id} — polling …")
     while time.time() < deadline:
