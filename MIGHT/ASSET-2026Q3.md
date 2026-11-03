@@ -2,6 +2,39 @@ ASSET LOG
 
 ####### <!-- ANCHOR MARKER - ADD ALL NEW ASSET ENTRIES DIRECTLY BELOW THIS LINE -->
 
+## ASSET:redwolf 2026-11-03 -> week 45 media regenerated (post-019 to post-030), smaller type
+
+Built against `e5661c0` (both week 45 batches). Replaces the pipeline-generated files from `7e1b26d` for post-019/020/021/023/024 (old files removed). Per client request, type is set about 20% smaller than week 44 (headlines 50–66px, body 15–24px, footer 17px). All 1080x1350.
+
+| Item | Media |
+|---|---|
+| post-019 | https://redwolfnz.github.io/md-redwolf/MAY/media/2026Q3/post-019-hardware-lifecycle.png |
+| post-020 | https://redwolfnz.github.io/md-redwolf/MAY/media/2026Q3/post-020-retail-aggression.png |
+| post-021 | https://redwolfnz.github.io/md-redwolf/MAY/media/2026Q3/post-021-zero-trust-ot.png |
+| post-022 | jpg (real photo): placeholder, URL left blank |
+| post-023 | https://redwolfnz.github.io/md-redwolf/MAY/media/2026Q3/post-023-procurement-checklist.pdf (+ post-023-slide-1..5.png) |
+| post-024 | https://redwolfnz.github.io/md-redwolf/MAY/media/2026Q3/post-024-year-end-checklist.gif (7.4s loop) |
+| post-025 | https://redwolfnz.github.io/md-redwolf/MAY/media/2026Q3/post-025-credential-lifecycle.gif (7.4s loop) |
+| post-026 | https://redwolfnz.github.io/md-redwolf/MAY/media/2026Q3/post-026-integration-cyber.png |
+| post-027 | https://redwolfnz.github.io/md-redwolf/MAY/media/2026Q3/post-027-warranty-status.png |
+| post-028 | https://redwolfnz.github.io/md-redwolf/MAY/media/2026Q3/post-028-wing-400.png |
+| post-029 | https://redwolfnz.github.io/md-redwolf/MAY/media/2026Q3/post-029-due-diligence.pdf (+ post-029-slide-1..5.png) |
+| post-030 | https://redwolfnz.github.io/md-redwolf/MAY/media/2026Q3/post-030-retail-aggression-poll.png |
+
+**Verified against `MAY/LOG-2026Q3.log`:** Gallagher Date of Warranty Report / Command Centre v9.30 / 2026 ASIAL Awards (29 Oct); NZSA ShopCare Retail Pledge and 91% finding (28 Oct); ASIS revised Workplace Violence standard (28 Oct); JCI OT zero-trust white paper (27 Oct); NZSA "over 85% of the industry by revenue" (bio); ICT Self Storage Week 11–12 Nov and gxStorAccess (28–29 Oct); Gallagher Synergy (29 Oct); NZSA Cyber Security Awareness Month (29 Oct); NZ Police Wing 400: 69 constables, 70 years after Wing 1, 20 weeks training, backgrounds listed (1 Nov).
+
+**Deviations / notes:**
+- post-019 replacement plan and post-027 chart are explicitly labelled "Illustrative" / "Sample data", not client figures.
+- post-021 and post-027 asked for Johnson Controls / Gallagher co-branding: partner named in text only, no third-party logos (needs partner brand approval).
+- post-023 red-flag list is derived from the post's own checks (inverse of each), not a sourced list.
+- post-029 "good answer" lines are Red Wolf guidance; post-029 has no sources.
+
+**Verify before publishing:**
+- Overlap: post-027 repeats post-019 (Gallagher warranty report) and post-030 repeats post-020 (91% ShopCare). Consider dropping one of each.
+- post-025 copy: Self Storage Week is on the Gold Coast (Australia), which the post doesn't say.
+- post-021: the JCI post attributes the zero-day finding to Anthropic; the copy says "thousands of zero-day vulnerabilities found this year" without a source.
+- post-029 wording on insurance (PL and PI) assumes Red Wolf holds both covers.
+
 ## ASSET:redwolf 2026-10-29 21:10 -> post-012 poll results graphic (real LinkedIn results)
 
 **Media:** https://redwolfnz.github.io/md-redwolf/MAY/media/2026Q3/post-012-poll-results.png — 1080x1080, per the post-012 brief ("You voted. Here are the results.").
