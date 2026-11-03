@@ -11,6 +11,27 @@ REQUIRED FORMAT FOR EACH ASSET ENTRY:
 
 ####### <!-- ANCHOR MARKER - ADD ALL NEW ASSET ENTRIES DIRECTLY BELOW THIS LINE, NEVER DELETE OR EDIT PREVIOUS ASSET ENTRIES-->
 
+## ASSET:redwolf 2026-11-03 09:00 → week 45 media fully generated; generate-media pipeline stabilised
+
+**Week 45 media — all generatable posts complete:**
+`post-019` PNG, `post-020` PNG, `post-021` PNG, `post-023` PDF (5-slide carousel), `post-024` GIF all committed to `MAY/media/2026Q3/` and media URLs populated in CSV. `post-022` JPG intentionally skipped (requires real staff photo). Pages deployed.
+
+**Root causes fixed during this session (in order):**
+1. `cairosvg`/`Pillow`/`img2pdf` installed to system Python 3.9 user packages, not the venv (Python 3.14). Fixed: installed into `.venv` via `pip install`.
+2. Native `cairo` C library missing. Fixed: `brew install cairo` via `/opt/homebrew/bin/brew`.
+3. `DYLD_LIBRARY_PATH=/opt/homebrew/lib` added to LaunchAgent plist so subprocesses find `libcairo.2.dylib`.
+4. `CLI_TIMEOUT_SECONDS` 270→450s — full CSV row (200-word description) pushed `claude -p` past the old limit.
+5. `GENERATE_MEDIA_TIMEOUT_SECONDS` 660→2700s — PDF (5 slides × 450s) exceeded the old outer subprocess timeout.
+6. Polling deadline made type-aware: PDF=2550s, GIF=1650s, PNG=750s (was flat 540s).
+7. 404 on status poll handled gracefully — listener restart no longer crashes the whole run.
+8. RFC 4180 CSV parser in `index.html` — week 45 descriptions had `\n\n` paragraph breaks; old line-split parser broke score/tags/hashtags display.
+9. `generate-media` job commented out in `generate-content.yml` — run manually via standalone `generate-media.yml` workflow until pipeline is stable.
+
+**Timeouts now in force:**
+- `CLI_TIMEOUT_SECONDS = 450` (py-redwolf/generate_media.py)
+- `GENERATE_MEDIA_TIMEOUT_SECONDS = 2700` (py-redwolf/listener.py)
+- Poll deadline: PNG 750s, GIF 1650s, PDF 2550s (gen_media.py)
+
 ## ASSET:redwolf 2026-11-02 18:01 → generate-media diagnosis — Claude 5-hour usage limit and hidden failures
 
 **Latest workflow result:** [Run 41388233893](https://github.com/redwolfnz/md-redwolf/actions/runs/41388233893) reported success for week 45 but generated only `post-019` (PNG, committed as `b8947dd`). Posts `post-020`, `post-021`, `post-023` (PDF), and `post-024` (GIF) returned zero files. `post-022` (JPG) was intentionally skipped because it requires a real asset. Async submission and status polling worked in this run.
