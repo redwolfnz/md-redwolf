@@ -2,6 +2,28 @@ ASSET LOG
 
 ####### <!-- ANCHOR MARKER - ADD ALL NEW ASSET ENTRIES DIRECTLY BELOW THIS LINE -->
 
+## ASSET:redwolf 2026-11-10 -> week 46 media generated (post-031 to post-036)
+
+Built against `0b86435`. Same reduced type scale as week 45 (headlines 54–74px, body 15–26px). All 1080x1350.
+
+| Item | Media |
+|---|---|
+| post-031 | https://redwolfnz.github.io/md-redwolf/MAY/media/2026Q3/post-031-site-survey.png |
+| post-032 | https://redwolfnz.github.io/md-redwolf/MAY/media/2026Q3/post-032-analytics-privacy.png |
+| post-033 | https://redwolfnz.github.io/md-redwolf/MAY/media/2026Q3/post-033-security-myths.pdf (+ post-033-slide-1..5.png) |
+| post-034 | jpg (real team photo): placeholder, URL left blank |
+| post-035 | https://redwolfnz.github.io/md-redwolf/MAY/media/2026Q3/post-035-iso-45001.png |
+| post-036 | https://redwolfnz.github.io/md-redwolf/MAY/media/2026Q3/post-036-shutdown-checklist.gif (7.7s loop) |
+
+**Notes:**
+- No sources on any week 46 row; graphics only restate the post copy. Privacy Act 2020 principles (purpose, notice, security, retention) and HSWA 2015 shared duties are general law, as worded in the posts.
+- post-032: "Facial recognition" and "Number plate recognition" added as examples of identifying features (the post says "features that identify individuals" without naming them).
+- post-035: PDCA checkpoints (site induction, permits/isolations, barriers, supervisor checks, client sign-off, near-miss logging) are illustrative examples of each stage.
+
+**Verify before publishing:**
+- post-035: Red Wolf's ISO 45001 status is not recorded anywhere in the repo. The graphic does not claim certification; don't add one unless confirmed.
+- post-036 overlaps post-024 (week 45 year-end checklist GIF). Different checks and visual, but similar theme in consecutive weeks.
+
 ## ASSET:redwolf 2026-11-03 -> week 45 media regenerated (post-019 to post-030), smaller type
 
 Built against `e5661c0` (both week 45 batches). Replaces the pipeline-generated files from `7e1b26d` for post-019/020/021/023/024 (old files removed). Per client request, type is set about 20% smaller than week 44 (headlines 50–66px, body 15–24px, footer 17px). All 1080x1350.
