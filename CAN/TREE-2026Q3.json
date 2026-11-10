@@ -10,13 +10,13 @@
       "Red Wolf High Level Security Ltd": { "url": "https://www.linkedin.com/company/red-wolf-high-level-security-ltd", "value": 0 }
     },
     "associations": {
-      "New Zealand Security Association (NZSA)": { "url": "https://www.linkedin.com/company/new-zealand-security-association", "value": 3 },
-      "ASIS International": { "url": "https://www.linkedin.com/company/asis-international", "value": 0 },
+      "New Zealand Security Association (NZSA)": { "url": "https://www.linkedin.com/company/new-zealand-security-association", "value": 4 },
+      "ASIS International": { "url": "https://www.linkedin.com/company/asis-international", "value": 1 },
       "NZ Police": { "url": "https://www.linkedin.com/company/nz-police", "value": 0 }
     },
     "partners": {
       "Johnson Controls": { "url": "https://www.linkedin.com/company/johnson-controls", "value": 0 },
-      "Gallagher Security": { "url": "https://www.linkedin.com/company/gallagher-security", "value": 0 },
+      "Gallagher Security": { "url": "https://www.linkedin.com/company/gallagher-security", "value": 1 },
       "Inner Range ANZ": { "url": "https://www.linkedin.com/company/inner-range-anz", "value": 0 },
       "Bosch Security and Safety Systems": { "url": "https://www.linkedin.com/company/bosch-security-systems", "value": 0 },
       "Integrated Control Technology (ICT)": { "url": "https://www.linkedin.com/company/integrated-control-technology", "value": 0 },
@@ -49,7 +49,7 @@
           "subtypes": [
             { "name": "Protective Security Surveys", "description": "Site assessment process and outcomes", "value": 0 },
             { "name": "Solution Design", "description": "End-to-end custom security design methodology", "value": 0 },
-            { "name": "Asset Management", "description": "Lifecycle management of installed security assets", "value": 0 },
+            { "name": "Asset Management", "description": "Lifecycle management of installed security assets", "value": 1 },
             { "name": "IQP Inspections", "description": "Independently Qualified Person inspections for access-controlled doors under the NZ Building Act compliance schedule", "value": 0 }
           ]
         }
@@ -61,7 +61,7 @@
         {
           "type": "Threat Intelligence",
           "subtypes": [
-            { "name": "Physical Security Threats", "description": "Break-in trends, tailgating, piggybacking risks", "value": 0 },
+            { "name": "Physical Security Threats", "description": "Break-in trends, tailgating, piggybacking risks", "value": 1 },
             { "name": "Cybersecurity Convergence", "description": "IT/OT security overlap, unified threat surface", "value": 0 },
             { "name": "Emerging Risks", "description": "Drone threats, deepfake access fraud, social engineering", "value": 0 }
           ]
