@@ -11,6 +11,14 @@ REQUIRED FORMAT FOR EACH ASSET ENTRY:
 
 ####### <!-- ANCHOR MARKER - ADD ALL NEW ASSET ENTRIES DIRECTLY BELOW THIS LINE, NEVER DELETE OR EDIT PREVIOUS ASSET ENTRIES-->
 
+## ASSET:redwolf 2026-11-17 10:00 → fix: browse_linkedin.py switched to headed Chrome to bypass Cloudflare bot challenge
+
+**Problem diagnosed (2026-11-17):** Both the weekly `fetch-linkedin` run (2026-11-15) and a direct test through the listener returned `followerCount: 0`, `bio: ""`, `recentPosts: []` for all 10 connections. Direct page dump via Playwright confirmed the cause: LinkedIn's CDN-level Cloudflare protection was intercepting `headless=True` Chrome and serving a "Performing security verification" block page instead of the LinkedIn company page. The `li_at` session cookie is still valid (expires 2027-10-22) — no re-login required.
+
+**Fix applied:** Changed `headless=True` → `headless=False` in `py-redwolf/browse_linkedin.py` (commit `b01979f`). The Mac mini has an active WindowServer/loginwindow GUI session, so a headed Chrome window opens on the display, passes Cloudflare's bot check, and closes automatically — no human interaction needed. Confirmed with a live test: NZSA returned `followerCount: 3765`, full bio, and 2 recent posts.
+
+**Deployed:** `py-redwolf` pulled to Mac mini (fast-forward to `b01979f`, also picking up 3 earlier listener/generate_media commits). `com.redwolf.linkedin-listener` LaunchAgent restarted. `fetch-linkedin` workflow re-triggered manually to refresh the week 47 cache before Tuesday's content generation run.
+
 ## ASSET:redwolf 2026-11-03 09:00 → week 45 media fully generated; generate-media pipeline stabilised
 
 **Week 45 media — all generatable posts complete:**
