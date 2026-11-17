@@ -11,6 +11,32 @@ REQUIRED FORMAT FOR EACH ASSET ENTRY:
 
 ####### <!-- ANCHOR MARKER - ADD ALL NEW ASSET ENTRIES DIRECTLY BELOW THIS LINE, NEVER DELETE OR EDIT PREVIOUS ASSET ENTRIES-->
 
+## ASSET:redwolf 2026-11-17 -> week 47 media generated (post-037 to post-042)
+
+Built against `e91e418`. Same reduced type scale as weeks 45–46; location footers now read "New Zealand" (matches post-036 change `94d4436`). All 1080x1350. Logo/shield assets re-cut from repo `logo.jpg` (build container was rebuilt).
+
+| Item | Media |
+|---|---|
+| post-037 | https://redwolfnz.github.io/md-redwolf/MAY/media/2026Q3/post-037-building-types.png |
+| post-038 | https://redwolfnz.github.io/md-redwolf/MAY/media/2026Q3/post-038-cloud-fallback.gif (8.7s loop) |
+| post-039 | https://redwolfnz.github.io/md-redwolf/MAY/media/2026Q3/post-039-security-metrics.pdf (+ post-039-slide-1..5.png) |
+| post-040 | https://redwolfnz.github.io/md-redwolf/MAY/media/2026Q3/post-040-be-safe-29-languages.png |
+| post-041 | https://redwolfnz.github.io/md-redwolf/MAY/media/2026Q3/post-041-handover-pack.pdf (+ post-041-slide-1..6.png) |
+| post-042 | https://redwolfnz.github.io/md-redwolf/MAY/media/2026Q3/post-042-visitor-journey.pdf (+ post-042-slide-1..4.png) |
+
+**Verified against `MAY/LOG-2026Q3.log` (16 Nov fetch):** ICT Melbourne Build Stand E17, 25–26 Nov, four demos by building type (12 + 16 Nov); Gallagher Microsoft email disruption (13 Nov); ASIS November Community Pulse incl. security metrics program (16 Nov); NZ Police Be Safe, Feel Safe booklet in 29 languages and its topics (12 Nov); Gallagher five-step visitor journey, Visitor Management powered by Kenai (16 Nov).
+
+**Deviations / notes:**
+- post-037: council and school design drivers are typical examples (the post only names hospital and apartment drivers).
+- post-039: "where to find it" and "what to do" lines are Red Wolf guidance built from the post's list.
+- post-040: no NZ Police logo or booklet artwork; generic booklet illustration only.
+- post-041: device register on slide 3 is labelled "Sample". No ISO 9001 certification claimed (post says "follows ISO 9001 principles").
+- post-042: brief asked for a repost of Gallagher's carousel. Built a Red Wolf commentary carousel instead (journey, comparison, poll); reshare Gallagher's post natively on LinkedIn if wanted.
+
+**Verify before publishing:**
+- post-041 copy says "Earlier this week we listed five questions" but that post (post-029) was in week 45.
+- post-040 post doesn't include the booklet link; NZ Police's own post links it.
+
 ## ASSET:redwolf 2026-11-17 10:00 → fix: browse_linkedin.py switched to headed Chrome to bypass Cloudflare bot challenge
 
 **Problem diagnosed (2026-11-17):** Both the weekly `fetch-linkedin` run (2026-11-15) and a direct test through the listener returned `followerCount: 0`, `bio: ""`, `recentPosts: []` for all 10 connections. Direct page dump via Playwright confirmed the cause: LinkedIn's CDN-level Cloudflare protection was intercepting `headless=True` Chrome and serving a "Performing security verification" block page instead of the LinkedIn company page. The `li_at` session cookie is still valid (expires 2027-10-22) — no re-login required.
